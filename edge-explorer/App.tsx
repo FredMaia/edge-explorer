@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   StyleSheet,
@@ -17,7 +17,11 @@ import {
   Defs,
   Path,
 } from "react-native-svg";
-import { LongPressGestureHandler, State, GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  LongPressGestureHandler,
+  State,
+  GestureHandlerRootView,
+} from "react-native-gesture-handler";
 
 const { height, width } = Dimensions.get("window");
 
@@ -28,10 +32,13 @@ type Vertex = {
 };
 
 type Edge = {
+  idAresta: number;
   x1: number;
   y1: number;
   x2: number;
   y2: number;
+  destino: number;
+  pesoAresta: number;
   directed: boolean;
 };
 
@@ -44,6 +51,70 @@ export default function App() {
   const [selectedVertex, setSelectedVertex] = useState<Vertex | null>(null);
   const [visitedVertices, setVisitedVertices] = useState<number[]>([]);
   const [isDirected, setIsDirected] = useState<boolean>(false);
+  const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
+  const [showEdgeModal, setShowEdgeModal] = useState<boolean>(false);
+
+  const [edgeClicked, setEdgeClicked] = useState(false);
+  const edgeClickedRef = useRef<boolean>(false);
+
+  const addEdgeFromBackend = (
+    idAresta: number,
+    vertex1: Vertex,
+    vertex2: Vertex,
+    pesoAresta: number
+  ) => {
+    const newEdge: Edge = {
+      idAresta,
+      x1: vertex1.x,
+      y1: vertex1.y,
+      x2: vertex2.x,
+      y2: vertex2.y,
+      destino: vertex2.id,
+      pesoAresta,
+      directed: isDirected,
+    };
+    setEdges((prevEdges) => [...prevEdges, newEdge]);
+
+    if (!isDirected) {
+      setEdges((prevEdges) => [
+        ...prevEdges,
+        {
+          idAresta,
+          x1: vertex2.x,
+          y1: vertex2.y,
+          x2: vertex1.x,
+          y2: vertex1.y,
+          destino: vertex1.id,
+          pesoAresta,
+          directed: false,
+        },
+      ]);
+    }
+  };
+
+  useEffect(() => {
+    const graphData = {
+      0: [0, 1, 1],
+      1: [
+        [0, 0, 1],
+        [1, 2, 1],
+        [2, 3, 1],
+      ],
+    };
+
+    // Object.entries(graphData).forEach(([vertexKey, edges]) => {
+    //   const vertex1 = vertices.find((v) => v.id === parseInt(vertexKey));
+    //   if (vertex1) {
+    //     edges.forEach(([idAresta, destino, pesoAresta]) => {
+    //       const vertex2 = vertices.find((v) => v.id === destino);
+    //       if (vertex2) {
+    //         addEdgeFromBackend(idAresta, vertex1, vertex2, pesoAresta);
+    //       }
+    //     });
+    //   }
+    // });
+    console.log(edges);
+  }, [edges]);
 
   const addVertex = (x: number, y: number) => {
     const newVertex: Vertex = {
@@ -54,30 +125,52 @@ export default function App() {
     setVertices((prevVertices) => [...prevVertices, newVertex]);
   };
 
-  const addEdge = (vertex1: Vertex, vertex2: Vertex) => {
-    const newEdge: Edge = {
-      x1: vertex1.x,
-      y1: vertex1.y,
-      x2: vertex2.x,
-      y2: vertex2.y,
-      directed: isDirected,
-    };
-    setEdges((prevEdges) => [...prevEdges, newEdge]);
-    if (!isDirected) {
-      setEdges((prevEdges) => [
-        ...prevEdges,
-        {
-          x1: vertex2.x,
-          y1: vertex2.y,
-          x2: vertex1.x,
-          y2: vertex1.y,
-          directed: false,
-        },
-      ]);
+  const addEdge = (vertex: Vertex) => {
+    if (selectedVertex) {
+      if (vertex.id !== selectedVertex.id) {
+        const newEdge: Edge = {
+          idAresta: edges.length, // ou um ID único, dependendo do seu sistema
+          x1: selectedVertex.x,
+          y1: selectedVertex.y,
+          x2: vertex.x,
+          y2: vertex.y,
+          destino: vertex.id,
+          pesoAresta: 1, // Defina o peso padrão ou ajuste conforme necessário
+          directed: isDirected,
+        };
+        setEdges((prevEdges) => [...prevEdges, newEdge]);
+
+        if (!isDirected) {
+          setEdges((prevEdges) => [
+            ...prevEdges,
+            {
+              idAresta: edges.length + 1, // ID para a aresta invertida
+              x1: vertex.x,
+              y1: vertex.y,
+              x2: selectedVertex.x,
+              y2: selectedVertex.y,
+              destino: selectedVertex.id,
+              pesoAresta: 1,
+              directed: false,
+            },
+          ]);
+        }
+      }
+      setSelectedVertex(null); // Deseleciona o vértice após criar a aresta
+    } else {
+      setSelectedVertex(vertex); // Seleciona o vértice
     }
   };
 
   const handlePress = (event: GestureResponderEvent) => {
+    if (edgeClickedRef.current) {
+      edgeClickedRef.current = false; // Reset após detectar clique na aresta
+      console.log("edge po");
+      return;
+    } else {
+      console.log("clicou fora");
+    }
+
     const locationX = event.nativeEvent.locationX;
     const locationY = event.nativeEvent.locationY;
 
@@ -89,15 +182,20 @@ export default function App() {
     });
 
     if (clickedVertex) {
-      if (selectedVertex) {
-        addEdge(selectedVertex, clickedVertex);
-        setSelectedVertex(null);
-      } else {
-        setSelectedVertex(clickedVertex);
-      }
+      addEdge(clickedVertex); // Adiciona ou seleciona um vértice
     } else {
-      addVertex(locationX, locationY);
-      setSelectedVertex(null);
+      addVertex(locationX, locationY); // Adiciona um novo vértice
+      setSelectedVertex(null); // Deseleciona qualquer vértice previamente selecionado
+    }
+  };
+
+  const handleEdgePress = (edgeId: number) => {
+    edgeClickedRef.current = true;
+    const edge = edges.find((e) => e.idAresta === edgeId);
+
+    if (edge) {
+      setSelectedEdge(edge);
+      setShowEdgeModal(true);
     }
   };
 
@@ -131,6 +229,28 @@ export default function App() {
               : edge.y2,
         }))
       );
+    }
+  };
+
+  const deleteEdge = () => {
+    if (selectedEdge) {
+      setEdges(edges.filter((e) => e.idAresta !== selectedEdge.idAresta));
+      setShowEdgeModal(false);
+      setSelectedEdge(null);
+    }
+  };
+
+  const updateEdgeWeight = (newWeight: number) => {
+    if (selectedEdge) {
+      setEdges(
+        edges.map((edge) =>
+          edge.idAresta === selectedEdge.idAresta
+            ? { ...edge, weight: newWeight }
+            : edge
+        )
+      );
+      setShowEdgeModal(false);
+      setSelectedEdge(null);
     }
   };
 
@@ -276,17 +396,39 @@ export default function App() {
         >
           <Svg height={height * 0.7} width={width}>
             {edges.map((edge, index) => (
-              <Line
-                key={index}
-                x1={edge.x1}
-                y1={edge.y1}
-                x2={edge.x2}
-                y2={edge.y2}
-                stroke={"black"}
-                strokeWidth={2}
-                markerEnd={edge.directed ? "url(#arrowhead)" : undefined}
-              />
+              <React.Fragment key={index}>
+                <Line
+                  x1={edge.x1}
+                  y1={edge.y1}
+                  x2={edge.x2}
+                  y2={edge.y2}
+                  stroke="red"
+                  onPress={() => handleEdgePress(edge.idAresta)}
+                  strokeWidth={20} // Aumente o valor para tornar a área de clique maior
+                />
+                <Line
+                  key={edge.idAresta}
+                  x1={edge.x1}
+                  y1={edge.y1}
+                  x2={edge.x2}
+                  y2={edge.y2}
+                  stroke={"black"}
+                  strokeWidth={8}
+                  onPress={() => handleEdgePress(edge.idAresta)}
+                  markerEnd={edge.directed ? "url(#arrowhead)" : undefined}
+                />
+                <SvgText
+                  x={(edge.x1 + edge.x2) / 2}
+                  y={(edge.y1 + edge.y2 - 20) / 2}
+                  fontSize="20"
+                  fill="black"
+                  textAnchor="middle"
+                >
+                  {edge.pesoAresta}
+                </SvgText>
+              </React.Fragment>
             ))}
+
             {vertices.map((vertex, index) => (
               <LongPressGestureHandler
                 key={index}
@@ -339,6 +481,43 @@ export default function App() {
             )}
           </Svg>
         </View>
+        {showEdgeModal && (
+          <Modal transparent={true} animationType="fade">
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text>Editar Aresta</Text>
+                <TouchableOpacity
+                  onPress={deleteEdge}
+                  style={styles.deleteButton}
+                >
+                  <Text style={styles.deleteButtonText}>Excluir</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => {
+                    const input = prompt("Novo peso:");
+                    if (input !== null) {
+                      const weight = parseFloat(input);
+                      if (!isNaN(weight)) {
+                        updateEdgeWeight(weight);
+                      } else {
+                        alert("Por favor, insira um número válido.");
+                      }
+                    }
+                  }}
+                  style={styles.editButton}
+                >
+                  <Text style={styles.editButtonText}>Alterar Peso</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setShowEdgeModal(false)}
+                  style={styles.cancelButton}
+                >
+                  <Text style={styles.cancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
         {showDeleteModal && (
           <Modal transparent={true} animationType="fade">
             <View style={styles.modalContainer}>
@@ -455,5 +634,13 @@ const styles = StyleSheet.create({
   cancelButtonText: {
     color: "white",
     fontWeight: "bold",
+  },
+  editButton: {
+    backgroundColor: "blue",
+    padding: 10,
+    marginTop: 10,
+  },
+  editButtonText: {
+    color: "white",
   },
 });

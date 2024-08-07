@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Text,
   Modal,
+  TextInput,
   GestureResponderEvent,
 } from "react-native";
 import {
@@ -57,6 +58,8 @@ export default function App() {
   const [edgeClicked, setEdgeClicked] = useState(false);
   const edgeClickedRef = useRef<boolean>(false);
 
+  const [newWeight, setNewWeight] = useState<string>("");
+
   const addEdgeFromBackend = (
     idAresta: number,
     vertex1: Vertex,
@@ -92,6 +95,19 @@ export default function App() {
     }
   };
 
+  const showEdges = () => {
+    return edges
+      .map(
+        (edge) =>
+          `Aresta ID: ${edge.idAresta}\n` +
+          `Origem: (${edge.x1}, ${edge.y1})\n` +
+          `Destino: (${edge.x2}, ${edge.y2})\n` +
+          `Peso: ${edge.pesoAresta}\n` +
+          `Direcionado: ${edge.directed ? "Sim" : "Não"}\n`
+      )
+      .join("\n");
+  };
+
   useEffect(() => {
     const graphData = {
       0: [0, 1, 1],
@@ -113,7 +129,7 @@ export default function App() {
     //     });
     //   }
     // });
-    console.log(edges);
+    console.log(showEdges());
   }, [edges]);
 
   const addVertex = (x: number, y: number) => {
@@ -144,7 +160,7 @@ export default function App() {
           setEdges((prevEdges) => [
             ...prevEdges,
             {
-              idAresta: edges.length + 1, // ID para a aresta invertida
+              idAresta: edges.length, // ID para a aresta invertida
               x1: vertex.x,
               y1: vertex.y,
               x2: selectedVertex.x,
@@ -234,23 +250,29 @@ export default function App() {
 
   const deleteEdge = () => {
     if (selectedEdge) {
+      console.log(`selected edge: ${JSON.stringify(selectedEdge)}`);
       setEdges(edges.filter((e) => e.idAresta !== selectedEdge.idAresta));
       setShowEdgeModal(false);
       setSelectedEdge(null);
+    } else {
+      console.log("Nenhum edge selecionado!");
     }
   };
 
   const updateEdgeWeight = (newWeight: number) => {
+    console.log(`newWeight: ${newWeight}`);
     if (selectedEdge) {
       setEdges(
         edges.map((edge) =>
           edge.idAresta === selectedEdge.idAresta
-            ? { ...edge, weight: newWeight }
+            ? { ...edge, pesoAresta: newWeight }
             : edge
         )
       );
       setShowEdgeModal(false);
       setSelectedEdge(null);
+    } else {
+      console.log("nenhum edge selecionado");
     }
   };
 
@@ -402,9 +424,8 @@ export default function App() {
                   y1={edge.y1}
                   x2={edge.x2}
                   y2={edge.y2}
-                  stroke="red"
                   onPress={() => handleEdgePress(edge.idAresta)}
-                  strokeWidth={20} // Aumente o valor para tornar a área de clique maior
+                  strokeWidth={20}
                 />
                 <Line
                   key={edge.idAresta}
@@ -485,35 +506,48 @@ export default function App() {
           <Modal transparent={true} animationType="fade">
             <View style={styles.modalContainer}>
               <View style={styles.modalContent}>
-                <Text>Editar Aresta</Text>
                 <TouchableOpacity
-                  onPress={deleteEdge}
-                  style={styles.deleteButton}
+                  onPress={() => setShowEdgeModal(false)}
+                  style={styles.closeButton}
                 >
-                  <Text style={styles.deleteButtonText}>Excluir</Text>
+                  <Text style={styles.closeButtonText}>X</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => {
-                    const input = prompt("Novo peso:");
-                    if (input !== null) {
-                      const weight = parseFloat(input);
+                <Text>Editar Aresta</Text>
+                <TextInput
+                  value={newWeight}
+                  onChangeText={(text) => setNewWeight(text)}
+                  keyboardType="numeric"
+                  style={styles.input}
+                  placeholder="Novo peso"
+                />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 20,
+                    justifyContent: "space-around",
+                    marginTop: 30
+                  }}
+                >
+                  <TouchableOpacity
+                    onPress={() => {
+                      const weight = parseFloat(newWeight);
                       if (!isNaN(weight)) {
                         updateEdgeWeight(weight);
                       } else {
                         alert("Por favor, insira um número válido.");
                       }
-                    }
-                  }}
-                  style={styles.editButton}
-                >
-                  <Text style={styles.editButtonText}>Alterar Peso</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => setShowEdgeModal(false)}
-                  style={styles.cancelButton}
-                >
-                  <Text style={styles.cancelButtonText}>Cancelar</Text>
-                </TouchableOpacity>
+                    }}
+                    style={styles.deleteButton}
+                  >
+                    <Text style={styles.editButtonText}>Alterar Peso</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={deleteEdge}
+                    style={styles.deleteButton}
+                  >
+                    <Text style={styles.deleteButtonText}>Excluir</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </Modal>
@@ -610,37 +644,75 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
+    width: 300, // Aumenta a largura do modal
+    padding: 40,
+    backgroundColor: "#ffffff", // Fundo branco
+    borderRadius: 10, // Bordas arredondadas
+    shadowColor: "#000", // Sombra
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#333",
   },
   deleteButton: {
-    backgroundColor: "red",
-    padding: 10,
+    backgroundColor: "#6c757d", //
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
-    marginTop: 10,
+    marginBottom: 10,
+    alignItems: "center",
   },
   deleteButtonText: {
-    color: "white",
-    fontWeight: "bold",
+    color: "#fff",
+    fontSize: 16,
   },
   cancelButton: {
-    backgroundColor: "gray",
-    padding: 10,
+    backgroundColor: "#6c757d",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     borderRadius: 5,
-    marginTop: 10,
+    alignItems: "center",
   },
   cancelButtonText: {
-    color: "white",
-    fontWeight: "bold",
+    color: "#fff",
+    fontSize: 16,
   },
   editButton: {
-    backgroundColor: "blue",
+    backgroundColor: "#6c757d",
     padding: 10,
     marginTop: 10,
   },
   editButtonText: {
     color: "white",
+    fontSize: 16,
+  },
+  input: {
+    height: 40,
+    borderColor: "gray",
+    borderWidth: 1,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    width: "100%",
+  },
+  closeButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 20,
+    width: 30,
+    height: 30,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeButtonText: {
+    fontSize: 18,
+    color: "#000",
   },
 });

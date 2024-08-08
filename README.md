@@ -151,3 +151,10 @@ Se você deseja contribuir para este projeto, por favor siga estes passos:
 3. Faça commit das suas alterações (`git commit -am 'Adiciona nova feature'`).
 4. Faça push para a branch (`git push origin minha-nova-feature`).
 5. Abra um Pull Request.
+
+tobedones
+-aresta de um vertice para ele mesmo
+-verificar se a aresta ja existe ao adiciona-la
+-bottom tab com opções
+-zoom in e zoom out
+-ao adicionar um vertice, ele nao é adicionado nos edges

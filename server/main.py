@@ -1,214 +1,131 @@
 from flask import Flask, request, jsonify
-from collections import deque
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 
-# Função de busca em largura (BFS)
-def bfs(graph, start):
-    visited = set()
-    queue = deque([start])
-    result = []
+# import logging
+# logging.basicConfig(level=logging.DEBUG)
 
-    while queue:
-        vertex = queue.popleft()
-        if vertex not in visited:
-            visited.add(vertex)
-            result.append(vertex)
-            queue.extend(neighbor for neighbor in graph.get(vertex, []) if neighbor not in visited)
-    return result
+Grafo = {
+    0: [(0, 1, 1)],
+    1: [(0, 0, 1), (1, 2, 1), (2, 3, 1)],
+    2: [(1, 1, 1), (3, 3, 1)],
+    3: [(2, 1, 1), (3, 2, 1)]
+}
 
-# Função de busca em profundidade (DFS)
-def dfs(graph, start):
-    visited = set()
-    result = []
+from collections import deque
 
-    def _dfs(vertex):
-        if vertex not in visited:
-            visited.add(vertex)
-            result.append(vertex)
-            for neighbor in graph.get(vertex, []):
-                _dfs(neighbor)
+def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
+    visitados = set()
+    fila = deque([vertice_inicial])
+    
+    arvore = []
+    sequencia_vertices = []
 
-    _dfs(start)
-    return result
+    while fila:
+        vertice_atual = fila.popleft()
+        visitados.add(vertice_atual)
+        sequencia_vertices.append(vertice_atual)
+
+        for id_aresta, destino, peso in sorted(arestas.get(vertice_atual, []), key=lambda x: x[1]):
+            if destino not in visitados:
+                fila.append(destino)
+                visitados.add(destino)
+                arvore.append(id_aresta)  
+
+    return sequencia_vertices
+
+def conexo(grafo):
+    vertices_visitados = arvore_largura(grafo, 1)
+    return len(vertices_visitados) == len(grafo.keys())
 
 @app.route('/bfs', methods=['POST'])
 def bfs_route():
-    data = request.json
-    graph = data.get('graph')
-    start = data.get('start')
-    result = bfs(graph, start)
-    return jsonify(result)
+    # data = request.json
+    # print(data)
+    # grafo = data.get('Grafo')
+    # print(grafo)
+    # start_node = data.get('start_node')
+    # print(start)
+    data = request.get_json()
+    print(data)
 
+    try: 
+        graph = data['Grafo']
+    
+        converted_graph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            converted_graph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    
+    print(converted_graph)
+    bfs_result = arvore_largura(converted_graph, 1)
+    print(f"resultado do bfs: {bfs_result}")    
+    
+    return jsonify({'bfs_order': bfs_result})
+
+# Rota POST para DFS
 @app.route('/dfs', methods=['POST'])
 def dfs_route():
     data = request.json
-    graph = data.get('graph')
-    start = data.get('start')
-    result = dfs(graph, start)
-    return jsonify(result)
+    start_node = data.get('start_node')
+    if start_node is None or start_node not in Grafo:
+        return jsonify({'error': 'Invalid start node'}), 400
+    
+    dfs_result = "yes"
+    return jsonify({'dfs_order': dfs_result})
+
+@app.route('/conexo', methods=['POST'])
+def is_connected():
+    data = request.get_json()
+    print(data)
+
+
+    try: 
+        graph = data['Grafo']
+    
+        converted_graph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            converted_graph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    
+    resultado = conexo(converted_graph)
+
+    return jsonify({'resultado': resultado})
+
+@app.route("/euleriano", methods=['POST'])
+def is_euleriano():
+    data = request.get_json()
+     
+    try: 
+        graph = data['Grafo']
+    
+        converted_graph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            converted_graph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+
+    if not conexo(converted_graph):
+        return jsonify({'resultado': 0}) 
+    
+
+    for vertice in converted_graph: 
+        if (len(converted_graph[vertice]) % 2 == 1):
+            return jsonify({'resultado': 0}) 
+
+    return jsonify({'resultado': 1}) 
+
+
+@app.route('/', methods=['GET'])
+def get_route():
+    return jsonify({'message': "working"})
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
-from flask import Flask, request, jsonify
-from collections import deque
-
-app = Flask(__name__)
-
-# Função de busca em largura (BFS)
-def bfs(graph, start):
-    visited = set()
-    queue = deque([start])
-    result = []
-
-    while queue:
-        vertex = queue.popleft()
-        if vertex not in visited:
-            visited.add(vertex)
-            result.append(vertex)
-            queue.extend(neighbor for neighbor in graph.get(vertex, []) if neighbor not in visited)
-    return result
-
-# Função de busca em profundidade (DFS)
-def dfs(graph, start):
-    visited = set()
-    result = []
-
-    def _dfs(vertex):
-        if vertex not in visited:
-            visited.add(vertex)
-            result.append(vertex)
-            for neighbor in graph.get(vertex, []):
-                _dfs(neighbor)
-
-    _dfs(start)
-    return result
-
-@app.route('/bfs', methods=['POST'])
-def bfs_route():
-    data = request.json
-    graph = data.get('graph')
-    start = data.get('start')
-    result = bfs(graph, start)
-    return jsonify(result)
-
-@app.route('/dfs', methods=['POST'])
-def dfs_route():
-    data = request.json
-    graph = data.get('graph')
-    start = data.get('start')
-    result = dfs(graph, start)
-    return jsonify(result)
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
-from flask import Flask, request, jsonify
-from collections import deque
-
-app = Flask(__name__)
-
-# Função de busca em largura (BFS)
-def bfs(graph, start):
-    visited = set()
-    queue = deque([start])
-    result = []
-
-    while queue:
-        vertex = queue.popleft()
-        if vertex not in visited:
-            visited.add(vertex)
-            result.append(vertex)
-            queue.extend(neighbor for neighbor in graph.get(vertex, []) if neighbor not in visited)
-    return result
-
-# Função de busca em profundidade (DFS)
-def dfs(graph, start):
-    visited = set()
-    result = []
-
-    def _dfs(vertex):
-        if vertex not in visited:
-            visited.add(vertex)
-            result.append(vertex)
-            for neighbor in graph.get(vertex, []):
-                _dfs(neighbor)
-
-    _dfs(start)
-    return result
-
-@app.route('/bfs', methods=['POST'])
-def bfs_route():
-    data = request.json
-    graph = data.get('graph')
-    start = data.get('start')
-    result = bfs(graph, start)
-    return jsonify(result)
-
-@app.route('/dfs', methods=['POST'])
-def dfs_route():
-    data = request.json
-    graph = data.get('graph')
-    start = data.get('start')
-    result = dfs(graph, start)
-    return jsonify(result)
-
-if __name__ == '__main__':
-    app.run(debug=True)
-
-
-from flask import Flask, request, jsonify
-from collections import deque
-
-app = Flask(__name__)
-
-# Função de busca em largura (BFS)
-def bfs(graph, start):
-    visited = set()
-    queue = deque([start])
-    result = []
-
-    while queue:
-        vertex = queue.popleft()
-        if vertex not in visited:
-            visited.add(vertex)
-            result.append(vertex)
-            queue.extend(neighbor for neighbor in graph.get(vertex, []) if neighbor not in visited)
-    return result
-
-# Função de busca em profundidade (DFS)
-def dfs(graph, start):
-    visited = set()
-    result = []
-
-    def _dfs(vertex):
-        if vertex not in visited:
-            visited.add(vertex)
-            result.append(vertex)
-            for neighbor in graph.get(vertex, []):
-                _dfs(neighbor)
-
-    _dfs(start)
-    return result
-
-@app.route('/bfs', methods=['POST'])
-def bfs_route():
-    data = request.json
-    graph = data.get('graph')
-    start = data.get('start')
-    result = bfs(graph, start)
-    return jsonify(result)
-
-@app.route('/dfs', methods=['POST'])
-def dfs_route():
-    data = request.json
-    graph = data.get('graph')
-    start = data.get('start')
-    result = dfs(graph, start)
-    return jsonify(result)
-
-if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)

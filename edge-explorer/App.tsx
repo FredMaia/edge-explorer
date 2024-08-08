@@ -4,6 +4,7 @@ import {
   StyleSheet,
   Dimensions,
   TouchableOpacity,
+  Alert,
   Text,
   Modal,
   TextInput,
@@ -24,6 +25,8 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 
+import axios from "axios";
+
 const { height, width } = Dimensions.get("window");
 
 type Vertex = {
@@ -39,6 +42,7 @@ type Edge = {
   x2: number;
   y2: number;
   destino: number;
+  origem: number;
   pesoAresta: number;
   directed: boolean;
 };
@@ -59,49 +63,15 @@ export default function App() {
   const edgeClickedRef = useRef<boolean>(false);
 
   const [newWeight, setNewWeight] = useState<string>("");
-
-  const addEdgeFromBackend = (
-    idAresta: number,
-    vertex1: Vertex,
-    vertex2: Vertex,
-    pesoAresta: number
-  ) => {
-    const newEdge: Edge = {
-      idAresta,
-      x1: vertex1.x,
-      y1: vertex1.y,
-      x2: vertex2.x,
-      y2: vertex2.y,
-      destino: vertex2.id,
-      pesoAresta,
-      directed: isDirected,
-    };
-    setEdges((prevEdges) => [...prevEdges, newEdge]);
-
-    if (!isDirected) {
-      setEdges((prevEdges) => [
-        ...prevEdges,
-        {
-          idAresta,
-          x1: vertex2.x,
-          y1: vertex2.y,
-          x2: vertex1.x,
-          y2: vertex1.y,
-          destino: vertex1.id,
-          pesoAresta,
-          directed: false,
-        },
-      ]);
-    }
-  };
+  const [idEdge, setIdEdge] = useState<number>(0);
 
   const showEdges = () => {
     return edges
       .map(
         (edge) =>
           `Aresta ID: ${edge.idAresta}\n` +
-          `Origem: (${edge.x1}, ${edge.y1})\n` +
-          `Destino: (${edge.x2}, ${edge.y2})\n` +
+          `Origem: (${edge.x1}, ${edge.origem})\n` +
+          `Destino: (${edge.x2}, ${edge.destino})\n` +
           `Peso: ${edge.pesoAresta}\n` +
           `Direcionado: ${edge.directed ? "Sim" : "Não"}\n`
       )
@@ -145,32 +115,37 @@ export default function App() {
     if (selectedVertex) {
       if (vertex.id !== selectedVertex.id) {
         const newEdge: Edge = {
-          idAresta: edges.length, // ou um ID único, dependendo do seu sistema
+          idAresta: idEdge,
           x1: selectedVertex.x,
           y1: selectedVertex.y,
           x2: vertex.x,
           y2: vertex.y,
           destino: vertex.id,
-          pesoAresta: 1, // Defina o peso padrão ou ajuste conforme necessário
+          origem: selectedVertex.id,
+          pesoAresta: 1,
           directed: isDirected,
         };
+
         setEdges((prevEdges) => [...prevEdges, newEdge]);
 
         if (!isDirected) {
           setEdges((prevEdges) => [
             ...prevEdges,
             {
-              idAresta: edges.length, // ID para a aresta invertida
+              idAresta: idEdge,
               x1: vertex.x,
               y1: vertex.y,
               x2: selectedVertex.x,
               y2: selectedVertex.y,
               destino: selectedVertex.id,
+              origem: vertex.id,
               pesoAresta: 1,
               directed: false,
             },
           ]);
         }
+
+        setIdEdge(idEdge + 1);
       }
       setSelectedVertex(null); // Deseleciona o vértice após criar a aresta
     } else {
@@ -330,32 +305,135 @@ export default function App() {
   };
 
   const bfs = async (startId: number) => {
-    const queue = [startId];
-    const visited = new Set<number>();
+    console.log("clicou no bfs");
+    try {
+      console.log("edgessss");
+      console.log(edges);
+      console.log("edgessss");
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
 
-    while (queue.length > 0) {
-      const currentId = queue.shift()!;
-      if (!visited.has(currentId)) {
-        visited.add(currentId);
-        setVisitedVertices(Array.from(visited));
-        await new Promise((res) => setTimeout(res, 2000)); // 2 segundos
+      const response = await axios.post(
+        "http://192.168.15.6:5000/bfs",
+        {
+          Grafo: grafo,
+          start_node: startId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-        const neighbors = edges
-          .filter(
-            (edge) =>
-              edge.x1 === vertices[currentId - 1].x &&
-              edge.y1 === vertices[currentId - 1].y
-          )
-          .map(
-            (edge) =>
-              vertices.find(
-                (vertex) => vertex.x === edge.x2 && vertex.y === edge.y2
-              )!.id
-          );
+      console.log("BFS Order:", response.data.bfs_order);
+      const bfsOrder = response.data.bfs_order;
 
-        queue.push(...neighbors.filter((neighbor) => !visited.has(neighbor)));
-      }
+      bfsOrder.forEach((vertexId: number, index: number) => {
+        setTimeout(() => {
+          setVisitedVertices((prev) => [...prev, vertexId]);
+        }, index * 2000); 
+      });
+    } catch (error) {
+      console.error("Fetch error:", error);
     }
+
+    // const queue = [startId];
+    // const visited = new Set<number>();
+
+    // while (queue.length > 0) {
+    //   const currentId = queue.shift()!;
+    //   if (!visited.has(currentId)) {
+    //     visited.add(currentId);
+    //     setVisitedVertices(Array.from(visited));
+    //     await new Promise((res) => setTimeout(res, 2000)); // 2 segundos
+
+    //     const neighbors = edges
+    //       .filter(
+    //         (edge) =>
+    //           edge.x1 === vertices[currentId - 1].x &&
+    //           edge.y1 === vertices[currentId - 1].y
+    //       )
+    //       .map(
+    //         (edge) =>
+    //           vertices.find(
+    //             (vertex) => vertex.x === edge.x2 && vertex.y === edge.y2
+    //           )!.id
+    //       );
+
+    //     queue.push(...neighbors.filter((neighbor) => !visited.has(neighbor)));
+    //   }
+    // }
+  };
+
+  const conexidade = async () => {
+    Alert.alert("conexidade");
+    const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+      (acc, edge) => {
+        if (!acc[edge.origem]) acc[edge.origem] = [];
+        acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+        return acc;
+      },
+      {}
+    );
+
+    const response = await axios.post(
+      "http://192.168.15.6:5000/conexo",
+      {
+        Grafo: grafo,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.resultado) {
+      console.log("É conexo")
+      Alert.alert("É conexo")
+    } else {
+      console.log("Não é conexo")
+      Alert.alert("Não é conexo")
+    }
+  };
+
+  const euleriano = async () => {
+
+    const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+      (acc, edge) => {
+        if (!acc[edge.origem]) acc[edge.origem] = [];
+        acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+        return acc;
+      },
+      {}
+    );
+    const response = await axios.post(
+      "http://192.168.15.6:5000/euleriano",
+      {
+        Grafo: grafo,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    ); 
+
+    if (response.data.resultado) {
+      console.log("É euleriano")
+      Alert.alert("É euleriano")
+    } else {
+      console.log("Não é euleriano")
+      Alert.alert("Não é euleriano")
+    }
+
   };
 
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
@@ -445,7 +523,7 @@ export default function App() {
                   fill="black"
                   textAnchor="middle"
                 >
-                  {edge.pesoAresta}
+                  {edge.pesoAresta}, {edge.idAresta}
                 </SvgText>
               </React.Fragment>
             ))}
@@ -525,7 +603,7 @@ export default function App() {
                     flexDirection: "row",
                     gap: 20,
                     justifyContent: "space-around",
-                    marginTop: 30
+                    marginTop: 30,
                   }}
                 >
                   <TouchableOpacity
@@ -582,6 +660,14 @@ export default function App() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.clearButton} onPress={() => bfs(1)}>
             <Text style={styles.clearButtonText}>BFS</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.clearButton} onPress={euleriano}>
+            <Text style={styles.clearButtonText}>Euleriano</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.clearButton} onPress={conexidade}>
+            <Text style={styles.clearButtonText}>Conexidade</Text>
           </TouchableOpacity>
         </View>
       </View>

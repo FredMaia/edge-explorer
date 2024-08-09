@@ -472,13 +472,13 @@ export default function App() {
             style={[styles.optionButton, isDirected && styles.selectedOption]}
             onPress={() => setIsDirected(true)}
           >
-            <Text style={styles.optionButtonText}>Directed</Text>
+            <Text style={styles.optionButtonText}>Direcionado</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.optionButton, !isDirected && styles.selectedOption]}
             onPress={() => setIsDirected(false)}
           >
-            <Text style={styles.optionButtonText}>Undirected</Text>
+            <Text style={styles.optionButtonText}>Não direcionado</Text>
           </TouchableOpacity>
         </View>
         <View

@@ -1,6 +1,6 @@
 # Graph Algorithm Visualization App
-
-Este projeto é um aplicativo para visualização de algoritmos em grafos. O frontend é desenvolvido em React Native e o backend é desenvolvido em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Bellman-Ford, Dijkstra, fluxo máximo, identificador de pontes, trilhas eulerianas, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto por meio de cliques como por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [Aqui](#aqui)
+ds
+Este projeto é um aplicativo para visualização de algoritmos em grafos. O frontend é desenvolvido em React Native e o backend é desenvolvido em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Bellman-Ford, Dijkstra, fluxo máximo, identificador de pontes, trilhas eulerianas, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto por meio de cliques como por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [aqui](#arquivo)
 
 # Índice
 
@@ -8,7 +8,7 @@ Este projeto é um aplicativo para visualização de algoritmos em grafos. O fro
 - [Interface](#interface)
   - [Instalação](#instalação)
   - [Uso](#uso)
-  - [Arquivo](#aqui)
+  - [Arquivo](#arquivo)
 - [Servidor](#servidor)
   - [Instalação](#instalação)
   - [Uso](#uso)
@@ -38,8 +38,8 @@ npx expo start
 
 #### Uso
 
-#### Arquivo de entrada
-
+#### Arquivo
+O arquivo txt de entrada deve estar estruturado da seguinte maneira: 
 ```
 // quantidade de vértices e arestas
 5 7

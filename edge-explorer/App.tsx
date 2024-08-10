@@ -25,6 +25,8 @@ import {
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
 
+import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 import axios from "axios";
 
 const { height, width } = Dimensions.get("window");
@@ -64,6 +66,13 @@ export default function App() {
 
   const [newWeight, setNewWeight] = useState<string>("");
   const [idEdge, setIdEdge] = useState<number>(0);
+
+  useEffect(() => {
+    const windowWidth = Dimensions.get("window").width;
+    const windowHeight = Dimensions.get("window").height;
+    console.log(windowHeight)
+    console.log(windowWidth)
+  }, []);
 
   const showEdges = () => {
     return edges
@@ -338,7 +347,7 @@ export default function App() {
       bfsOrder.forEach((vertexId: number, index: number) => {
         setTimeout(() => {
           setVisitedVertices((prev) => [...prev, vertexId]);
-        }, index * 2000); 
+        }, index * 2000);
       });
     } catch (error) {
       console.error("Fetch error:", error);
@@ -396,16 +405,15 @@ export default function App() {
     );
 
     if (response.data.resultado) {
-      console.log("É conexo")
-      Alert.alert("É conexo")
+      console.log("É conexo");
+      Alert.alert("É conexo");
     } else {
-      console.log("Não é conexo")
-      Alert.alert("Não é conexo")
+      console.log("Não é conexo");
+      Alert.alert("Não é conexo");
     }
   };
 
   const euleriano = async () => {
-
     const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
       (acc, edge) => {
         if (!acc[edge.origem]) acc[edge.origem] = [];
@@ -424,16 +432,15 @@ export default function App() {
           "Content-Type": "application/json",
         },
       }
-    ); 
+    );
 
     if (response.data.resultado) {
-      console.log("É euleriano")
-      Alert.alert("É euleriano")
+      console.log("É euleriano");
+      Alert.alert("É euleriano");
     } else {
-      console.log("Não é euleriano")
-      Alert.alert("Não é euleriano")
+      console.log("Não é euleriano");
+      Alert.alert("Não é euleriano");
     }
-
   };
 
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
@@ -464,6 +471,70 @@ export default function App() {
     }
   };
 
+  const [file, setFile] = useState<FileInfo | null>(null);
+  const [response, setResponse] = useState<string>("");
+
+  const pickFile = async () => {
+    try {
+      const res = await DocumentPicker.getDocumentAsync({
+        type: "text/plain",
+      });
+
+      console.log(res.canceled);
+      if (!res.canceled) {
+        const { uri, name, size, mimeType } = res.assets[0];
+        console.log(uri);
+        setFile({
+          uri,
+          name,
+          size,
+          type: mimeType || "text/plain",
+        });
+      }
+    } catch (err) {
+      console.log("Error picking file:", err);
+    }
+  };
+
+  interface FileInfo {
+    uri: string;
+    name: string;
+    size: number;
+    type: string;
+  }
+
+  const uploadFile = async () => {
+    if (file) {
+      try {
+        const formData = new FormData();
+
+        formData.append("file", {
+          uri: file.uri,
+          name: file.name,
+          type: file.type,
+        } as unknown as Blob);
+
+        const res = await axios.post(
+          "http://192.168.15.6:5000/upload",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        setResponse(res.data);
+
+        setVertices(res.data.vertices);
+        setEdges(res.data.edges);
+
+        console.log(res.data);
+      } catch (err) {
+        console.log("Error uploading file:", err);
+      }
+    }
+  };
   return (
     <GestureHandlerRootView>
       <View style={styles.container}>
@@ -668,6 +739,15 @@ export default function App() {
           </TouchableOpacity>
           <TouchableOpacity style={styles.clearButton} onPress={conexidade}>
             <Text style={styles.clearButtonText}>Conexidade</Text>
+          </TouchableOpacity>
+          <Text>response: {file?.uri} </Text>
+        </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.clearButton} onPress={pickFile}>
+            <Text style={styles.clearButtonText}>pickFile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.clearButton} onPress={uploadFile}>
+            <Text style={styles.clearButtonText}>uploadFile</Text>
           </TouchableOpacity>
         </View>
       </View>

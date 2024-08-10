@@ -2,61 +2,44 @@ import ast
 import sys
 
 
-def ler_grafo(filepath: str = './ler.txt', nao_direcionado: bool = True):
-    grafo = open('./ler.txt')
+def ler_grafo(filepath: str, nao_direcionado: bool):
+    # Abrir o arquivo com a opção encoding='utf-8-sig' para remover o BOM
+    with open(filepath, 'r', encoding='utf-8-sig') as grafo:
+        print(f"Arquivo lido: {filepath}")
 
-    v, a = map(int, grafo.readline().split())
-    print(v, a)
+        # Ler número de vértices e arestas
+        try:
+            v, a = map(int, grafo.readline().split())
+            print(f"Número de vértices: {v}, Número de arestas: {a}")
+        except ValueError as e:
+            print(f"Erro ao ler o número de vértices ou arestas: {e}")
+            sys.exit(1)
 
-    direcao = grafo.readline().strip()
-    print(direcao)
-    if direcao != "nao_direcionado":
-        nao_direcionado = False
-    print(nao_direcionado)
+        # Ler a informação sobre se o grafo é direcionado ou não
+        direcao = grafo.readline().strip()
+        print(f"Direção do grafo: {direcao}")
+        if direcao != "nao_direcionado":
+            nao_direcionado = False
+        print(f"Grafo não direcionado: {nao_direcionado}")
 
-    arestas = {}
-    for i in range(0, v, 1):
-        arestas[i] = []
+        # Inicializar o dicionário de arestas
+        arestas = {i: [] for i in range(v)}
 
-    for i in range(0, a, 1):
-        id, v1, v2, p = map(int, grafo.readline().split())
-        arestas[v1].append((id, v2, p))
-        if nao_direcionado:
-            arestas[v2].append((id, v1, p))
+        # Ler as arestas
+        for _ in range(a):
+            try:
+                id, v1, v2, p = map(int, grafo.readline().split())
+                arestas[v1].append((id, v2, p))
+                if nao_direcionado:
+                    arestas[v2].append((id, v1, p))
+            except ValueError as e:
+                print(f"Erro ao ler uma aresta: {e}")
+                sys.exit(1)
+
+        print("Arestas do grafo:")
+        print(arestas)
+
     return list(arestas.keys()), arestas, nao_direcionado
-    # grafo = open(filepath).read().split(';', 1)
-    #
-    # grafo_vertices = (grafo[0].strip().removeprefix('V = ').replace('{', '[').replace('}', ']'))
-    #
-    # try:
-    #     grafo_vertices = list(ast.literal_eval(grafo_vertices))
-    # except:
-    #     print('Formato do Arquivo está errado')
-    #     sys.exit(1)
-    #
-    # grafo_arestas = (grafo[1].strip().removeprefix('A = ').replace('{', '[').replace('}', ']').removesuffix(';'))
-    #
-    # try:
-    #     grafo_arestas = list(ast.literal_eval(grafo_arestas))
-    # except:
-    #     print('Formato do Arquivo está errado')
-    #     sys.exit(1)
-    #
-    # # Checa se todas arestas tem um vértice válido
-    # try:
-    #     for aresta in grafo_arestas:
-    #         if aresta[0] not in grafo_vertices or aresta[1] not in grafo_vertices:
-    #             raise Exception
-    # except:
-    #     print('Vértice de aresta não encontrado')
-    #     sys.exit(1)
-    #
-    # if nao_direcionado:
-    #     for aresta in grafo_arestas:
-    #         if (aresta[1], aresta[0]) not in grafo_arestas:
-    #             grafo_arestas.append((aresta[1], aresta[0]))
-    #
-    # return grafo_vertices, grafo_arestas
 
 
 if __name__ == '__main__':

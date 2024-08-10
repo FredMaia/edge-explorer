@@ -1,20 +1,64 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from collections import deque
+import os
+import random
+import json
+
+from read import ler_grafo
 
 app = Flask(__name__)
 CORS(app)
 
-# import logging
-# logging.basicConfig(level=logging.DEBUG)
+UPLOAD_FOLDER = 'uploads/'
 
-Grafo = {
-    0: [(0, 1, 1)],
-    1: [(0, 0, 1), (1, 2, 1), (2, 3, 1)],
-    2: [(1, 1, 1), (3, 3, 1)],
-    3: [(2, 1, 1), (3, 2, 1)]
-}
 
-from collections import deque
+
+
+def gerar_vertices(v: int) -> list:
+    vertices = []
+    for i in range(v):
+        x = random.randint(50, 750)
+        y = random.randint(50, 550)
+        vertices.append({
+            'id': i,
+            'x': x,
+            'y': y
+        })
+    return vertices
+
+def gerar_arestas(arestas: dict, vertices: list, is_directed: bool) -> list:
+    edges = []
+    for origem, arestas_lista in arestas.items():
+        for id, destino, peso in arestas_lista:
+            x1 = next(vertex['x'] for vertex in vertices if vertex['id'] == origem)
+            y1 = next(vertex['y'] for vertex in vertices if vertex['id'] == origem)
+            x2 = next(vertex['x'] for vertex in vertices if vertex['id'] == destino)
+            y2 = next(vertex['y'] for vertex in vertices if vertex['id'] == destino)
+            
+            edges.append({
+                'idAresta': id,
+                'x1': x1,
+                'y1': y1,
+                'x2': x2,
+                'y2': y2,
+                'destino': destino,
+                'origem': origem,
+                'pesoAresta': peso,
+                'directed': not is_directed
+            })
+    return edges
+
+def preparar_dados_para_frontend(v: int, arestas: dict, is_directed: bool) -> str:
+    vertices = gerar_vertices(v)
+    edges = gerar_arestas(arestas, vertices, is_directed)
+    
+    dados = {
+        'vertices': vertices,
+        'edges': edges
+    }
+    
+    return json.dumps(dados)
 
 def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
     visitados = set()
@@ -67,17 +111,6 @@ def bfs_route():
     
     return jsonify({'bfs_order': bfs_result})
 
-# Rota POST para DFS
-@app.route('/dfs', methods=['POST'])
-def dfs_route():
-    data = request.json
-    start_node = data.get('start_node')
-    if start_node is None or start_node not in Grafo:
-        return jsonify({'error': 'Invalid start node'}), 400
-    
-    dfs_result = "yes"
-    return jsonify({'dfs_order': dfs_result})
-
 @app.route('/conexo', methods=['POST'])
 def is_connected():
     data = request.get_json()
@@ -97,6 +130,39 @@ def is_connected():
     resultado = conexo(converted_graph)
 
     return jsonify({'resultado': resultado})
+
+
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file:
+        # Save the file using the UPLOAD_FOLDER variable
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        try:
+            print(f"Saving file at: {file_path}")
+            file.save(file_path)
+            print("File saved successfully")
+        except Exception as save_error:
+            print(f"Error saving file: {save_error}")
+            return jsonify({'error': 'Failed to save file'}), 500
+
+        try:
+            print(f"Processing file at: {file_path}")
+            v, arestas, nao_direcionado = ler_grafo(filepath=file_path, nao_direcionado="direcionado")
+            dados_json = preparar_dados_para_frontend(len(v), arestas, nao_direcionado)
+            print(dados_json)
+            return dados_json, 200, {'Content-Type': 'application/json'}
+        except Exception as process_error:
+            print(f"Error processing graph: {process_error}")
+            return jsonify({'error': 'Failed to process graph'}), 500
 
 @app.route("/euleriano", methods=['POST'])
 def is_euleriano():

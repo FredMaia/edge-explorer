@@ -1,6 +1,6 @@
 # Graph Algorithm Visualization App
 
-Este projeto é um aplicativo para visualização de algoritmos em grafos. O frontend é desenvolvido em React Native e o backend é desenvolvido em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Bellman-Ford, Dijkstra, fluxo máximo, identificador de pontes, trilhas eulerianas, vértices de articulação, dentre outros. 
+Este projeto é um aplicativo para visualização de algoritmos em grafos. O frontend é desenvolvido em React Native e o backend é desenvolvido em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Bellman-Ford, Dijkstra, fluxo máximo, identificador de pontes, trilhas eulerianas, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto por meio de cliques como por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [Aqui](#aqui)
 
 # Índice
 
@@ -8,6 +8,7 @@ Este projeto é um aplicativo para visualização de algoritmos em grafos. O fro
 - [Interface](#interface)
   - [Instalação](#instalação)
   - [Uso](#uso)
+  - [Arquivo](#aqui)
 - [Servidor](#servidor)
   - [Instalação](#instalação)
   - [Uso](#uso)
@@ -36,6 +37,25 @@ npx expo start
 ```
 
 #### Uso
+
+#### Arquivo de entrada
+
+```
+// quantidade de vértices e arestas
+5 7
+
+// ou então "nao_direcionado"
+direcionado 
+
+// idAresta, verticeOrigem, verticeDestino, pesoAresta
+0 0 1 2     
+1 0 2 4     
+2 1 2 5
+3 1 4 3
+4 2 3 8
+5 3 1 2
+6 3 4 4
+```
 
 ### imagens
 
@@ -108,3 +128,4 @@ tobedones
 -bottom tab com opções
 -zoom in e zoom out
 -ao adicionar um vertice, ele nao é adicionado nos edges
+-ver preview do arquivo selecionado

@@ -70,8 +70,8 @@ export default function App() {
   useEffect(() => {
     const windowWidth = Dimensions.get("window").width;
     const windowHeight = Dimensions.get("window").height;
-    console.log(windowHeight)
-    console.log(windowWidth)
+    console.log(windowHeight);
+    console.log(windowWidth);
   }, []);
 
   const showEdges = () => {
@@ -514,6 +514,9 @@ export default function App() {
           type: file.type,
         } as unknown as Blob);
 
+        formData.append("width", width.toString());
+        formData.append("height", height.toString());
+
         const res = await axios.post(
           "http://192.168.15.6:5000/upload",
           formData,
@@ -535,6 +538,7 @@ export default function App() {
       }
     }
   };
+
   return (
     <GestureHandlerRootView>
       <View style={styles.container}>

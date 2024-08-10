@@ -15,11 +15,11 @@ UPLOAD_FOLDER = 'uploads/'
 
 
 
-def gerar_vertices(v: int) -> list:
+def gerar_vertices(v: int, width: int, height: int) -> list:
     vertices = []
     for i in range(v):
-        x = random.randint(50, 750)
-        y = random.randint(50, 550)
+        x = random.randint(50, width - 50)
+        y = random.randint(50, height - 50)
         vertices.append({
             'id': i,
             'x': x,
@@ -49,8 +49,8 @@ def gerar_arestas(arestas: dict, vertices: list, is_directed: bool) -> list:
             })
     return edges
 
-def preparar_dados_para_frontend(v: int, arestas: dict, is_directed: bool) -> str:
-    vertices = gerar_vertices(v)
+def preparar_dados_para_frontend(v: int, arestas: dict, is_directed: bool, width: int, height: int) -> str:
+    vertices = gerar_vertices(v, width, height)
     edges = gerar_arestas(arestas, vertices, is_directed)
     
     dados = {
@@ -147,6 +147,8 @@ def upload_file():
         # Save the file using the UPLOAD_FOLDER variable
         file_path = os.path.join(UPLOAD_FOLDER, file.filename)
         try:
+            
+            
             print(f"Saving file at: {file_path}")
             file.save(file_path)
             print("File saved successfully")
@@ -156,8 +158,14 @@ def upload_file():
 
         try:
             print(f"Processing file at: {file_path}")
+            width = request.form.get('width')
+            height = request.form.get('height')
+
+            width = int(float(width))
+            height = int(float(height))
+
             v, arestas, nao_direcionado = ler_grafo(filepath=file_path, nao_direcionado="direcionado")
-            dados_json = preparar_dados_para_frontend(len(v), arestas, nao_direcionado)
+            dados_json = preparar_dados_para_frontend(len(v), arestas, nao_direcionado, width, height)
             print(dados_json)
             return dados_json, 200, {'Content-Type': 'application/json'}
         except Exception as process_error:

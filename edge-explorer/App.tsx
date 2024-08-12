@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   View,
   StyleSheet,
@@ -8,6 +8,7 @@ import {
   Text,
   Modal,
   TextInput,
+  ScrollView,
   GestureResponderEvent,
 } from "react-native";
 import {
@@ -27,6 +28,11 @@ import {
 
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
+import BottomSheet, {
+  BottomSheetFlatList,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
+
 import axios from "axios";
 
 const { height, width } = Dimensions.get("window");
@@ -50,6 +56,15 @@ type Edge = {
 };
 
 export default function App() {
+  const snapPoints = useMemo(() => ["15%", "50%", "90%"], []);
+
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  const handleCollapsePress = () => bottomSheetRef.current?.collapse();
+  const snapToIndex = (index: number) => bottomSheetRef.current?.snapToIndex(index)
+
+  
+
   const [vertices, setVertices] = useState<Vertex[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [draggedVertexIndex, setDraggedVertexIndex] = useState<number | null>(
@@ -482,12 +497,11 @@ export default function App() {
 
       console.log(res.canceled);
       if (!res.canceled) {
-        const { uri, name, size, mimeType } = res.assets[0];
+        const { uri, name, mimeType } = res.assets[0];
         console.log(uri);
         setFile({
           uri,
           name,
-          size,
           type: mimeType || "text/plain",
         });
       }
@@ -499,7 +513,6 @@ export default function App() {
   interface FileInfo {
     uri: string;
     name: string;
-    size: number;
     type: string;
   }
 
@@ -537,6 +550,72 @@ export default function App() {
         console.log("Error uploading file:", err);
       }
     }
+  };
+
+  // New functions
+  const bipartiteCheck = () => {
+    Alert.alert("bipartiteCheck");
+    // Implement bipartite check
+  };
+
+  const cycleCheck = () => {
+    Alert.alert("cycleCheck");
+    // Implement cycle check
+  };
+
+  const connectedComponents = () => {
+    Alert.alert("connectedComponents");
+    // Implement connected components count
+  };
+
+  const stronglyConnectedComponents = () => {
+    Alert.alert("stronglyConnectedComponents");
+    // Implement strongly connected components count
+  };
+
+  const articulationPoints = () => {
+    Alert.alert("articulationPoints");
+    // Implement articulation points listing
+  };
+
+  const bridgesCount = () => {
+    Alert.alert("bridgesCount");
+    // Implement bridge edges count
+  };
+
+  const depthTree = () => {
+    Alert.alert("depthTree");
+    // Implement depth tree
+  };
+
+  const breadthTree = () => {
+    Alert.alert("breadthTree");
+    // Implement breadth tree
+  };
+
+  const minimumSpanningTree = () => {
+    Alert.alert("minimumSpanningTree");
+    // Implement MST value calculation
+  };
+
+  const topologicalSort = () => {
+    Alert.alert("topologicalSort");
+    // Implement topological sort
+  };
+
+  const shortestPath = () => {
+    Alert.alert("shortestPath");
+    // Implement shortest path calculation
+  };
+
+  const maxFlow = () => {
+    Alert.alert("maxFlow");
+    // Implement max flow calculation
+  };
+
+  const transitiveClosure = () => {
+    Alert.alert("transitiveClosure");
+    // Implement transitive closure
   };
 
   return (
@@ -726,34 +805,123 @@ export default function App() {
             </View>
           </Modal>
         )}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.clearButton} onPress={handleReset}>
-            <Text style={styles.clearButtonText}>Reset</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.clearButton} onPress={() => dfs(1)}>
-            <Text style={styles.clearButtonText}>DFS</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.clearButton} onPress={() => bfs(1)}>
-            <Text style={styles.clearButtonText}>BFS</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.clearButton} onPress={euleriano}>
-            <Text style={styles.clearButtonText}>Euleriano</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.clearButton} onPress={conexidade}>
-            <Text style={styles.clearButtonText}>Conexidade</Text>
-          </TouchableOpacity>
-          <Text>response: {file?.uri} </Text>
-        </View>
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.clearButton} onPress={pickFile}>
-            <Text style={styles.clearButtonText}>pickFile</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.clearButton} onPress={uploadFile}>
-            <Text style={styles.clearButtonText}>uploadFile</Text>
-          </TouchableOpacity>
-        </View>
+        <BottomSheet
+          snapPoints={snapPoints}
+          ref={bottomSheetRef}
+          backgroundStyle={{ backgroundColor: "#f8f8f8" }}
+          style={{ alignItems: "center" }}
+        >
+          
+          <BottomSheetView>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={handleReset}
+              >
+                <Text style={styles.clearButtonText}>Reset</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={() => dfs(1)}
+              >
+                <Text style={styles.clearButtonText}>DFS</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={() => bfs(1)}
+              >
+                <Text style={styles.clearButtonText}>BFS</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.clearButton} onPress={() => handleCollapsePress()}>
+                <Text style={styles.clearButtonText}>Eulerian</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.clearButton} onPress={conexidade}>
+                <Text style={styles.clearButtonText}>Connectivity</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={bipartiteCheck}
+              >
+                <Text style={styles.clearButtonText}>Check Bipartiteness</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity style={styles.clearButton} onPress={cycleCheck}>
+                <Text style={styles.clearButtonText}>Check Cycles</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={connectedComponents}
+              >
+                <Text style={styles.clearButtonText}>Connected Components</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={stronglyConnectedComponents}
+              >
+                <Text style={styles.clearButtonText}>
+                  Strongly Connected Components
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={articulationPoints}
+              >
+                <Text style={styles.clearButtonText}>Articulation Points</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={bridgesCount}
+              >
+                <Text style={styles.clearButtonText}>Bridge Edges</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.clearButton} onPress={depthTree}>
+                <Text style={styles.clearButtonText}>Depth Tree</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={breadthTree}
+              >
+                <Text style={styles.clearButtonText}>Breadth Tree</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={topologicalSort}
+              >
+                <Text style={styles.clearButtonText}>Topological Sort</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={shortestPath}
+              >
+                <Text style={styles.clearButtonText}>Shortest Path</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.clearButton} onPress={maxFlow}>
+                <Text style={styles.clearButtonText}>Max Flow</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={transitiveClosure}
+              >
+                <Text style={styles.clearButtonText}>Transitive Closure</Text>
+              </TouchableOpacity>
+            </View>
+          </BottomSheetView>
+        </BottomSheet>
       </View>
     </GestureHandlerRootView>
   );
@@ -793,13 +961,15 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     flexDirection: "row",
+    justifyContent: "center",
     marginTop: 10,
   },
   clearButton: {
-    marginHorizontal: 10,
+    marginHorizontal: "1%",
     backgroundColor: "black",
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
+    width: "45%",
     borderRadius: 5,
   },
   clearButtonText: {

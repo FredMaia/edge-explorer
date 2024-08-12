@@ -129,3 +129,5 @@ tobedones
 -zoom in e zoom out
 -ao adicionar um vertice, ele nao é adicionado nos edges
 -ver preview do arquivo selecionado
+
+-estruturar pastas do server: main.py que chama cada função da rota na sua respectiva pasta (listar, gerar, verificar)

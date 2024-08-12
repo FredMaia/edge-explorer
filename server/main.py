@@ -201,5 +201,170 @@ def is_euleriano():
 def get_route():
     return jsonify({'message': "working"})
 
+
+
+
+def convert_graph(data):
+    try:
+        graph = data['Grafo']
+        converted_graph = {int(key): [(int(edge[0]), int(edge[1]), float(edge[2])) for edge in edges] for key, edges in graph.items()}
+        return converted_graph, None
+    except Exception as e:
+        return None, 'Invalid input'
+
+@app.route('/conexo', methods=['POST'])
+def verificar_conexo():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement the connectivity check here
+    result = "is_connected(graph)"
+    return jsonify({'conexo': result})
+
+@app.route('/bipartido', methods=['POST'])
+def verificar_bipartido():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement bipartite check here
+    result = "is_bipartite(graph)"
+    return jsonify({'bipartido': result})
+
+@app.route('/euleriano', methods=['POST'])
+def verificar_euleriano():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement Eulerian check here
+    result = "is_eulerian(graph)"
+    return jsonify({'euleriano': result})
+
+@app.route('/ciclo', methods=['POST'])
+def verificar_ciclo():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement cycle check here
+    result = "has_cycle(graph"
+    return jsonify({'ciclo': result})
+
+@app.route('/componentes_conexos', methods=['POST'])
+def calcular_componentes_conexos():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement connected components count here
+    result = "count_connected_components(graph)"
+    return jsonify({'componentes_conexos': result})
+
+@app.route('/componentes_fortes', methods=['POST'])
+def calcular_componentes_fortes():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement strongly connected components count here
+    result = "count_strongly_connected_components(graph)"
+    return jsonify({'componentes_fortes': result})
+
+@app.route('/pontos_articulacao', methods=['POST'])
+def imprimir_pontos_articulacao():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement articulation points listing here
+    result = "articulation_points(graph)"
+    return jsonify({'pontos_articulacao': result})
+
+@app.route('/arestas_ponte', methods=['POST'])
+def calcular_arestas_ponte():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement bridge edges count here
+    result = "count_bridges(graph)"
+    return jsonify({'arestas_ponte': result})
+
+@app.route('/arvore_profundidade', methods=['POST'])
+def imprimir_arvore_profundidade():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement depth tree here
+    result = "depth_tree(graph)"
+    return jsonify({'arvore_profundidade': result})
+
+@app.route('/arvore_largura', methods=['POST'])
+def imprimir_arvore_largura():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement breadth tree here
+    result = "breadth_tree(graph)"
+    return jsonify({'arvore_largura': result})
+
+@app.route('/arvore_geradora_minima', methods=['POST'])
+def calcular_arvore_geradora_minima():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement MST value calculation here
+    result = "minimum_spanning_tree(graph)"
+    return jsonify({'arvore_geradora_minima': result})
+
+@app.route('/ordenacao_topologica', methods=['POST'])
+def imprimir_ordenacao_topologica():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement topological sort here
+    result = "topological_sort(graph)"
+    return jsonify({'ordenacao_topologica': result})
+
+@app.route('/caminho_minimo', methods=['POST'])
+def calcular_caminho_minimo():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement shortest path calculation here
+    result = "shortest_path(graph)"
+    return jsonify({'caminho_minimo': result})
+
+@app.route('/fluxo_maximo', methods=['POST'])
+def calcular_fluxo_maximo():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement max flow calculation here
+    result = "max_flow(graph)"
+    return jsonify({'fluxo_maximo': result})
+
+@app.route('/fecho_transitivo', methods=['POST'])
+def calcular_fecho_transitivo():
+    data = request.get_json()
+    graph, error = convert_graph(data)
+    if error:
+        return jsonify({'error': error}), 400
+    # Implement transitive closure here
+    result = "transitive_closure(graph)"
+    return jsonify({'fecho_transitivo': result})
+
+
+
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

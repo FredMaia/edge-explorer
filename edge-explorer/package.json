@@ -15,6 +15,7 @@
     "expo-document-picker": "~12.0.2",
     "expo-file-system": "~17.0.1",
     "expo-status-bar": "~1.12.1",
+    "lodash": "^4.17.21",
     "react": "18.2.0",
     "react-native": "0.74.3",
     "react-native-gesture-handler": "^2.18.1",

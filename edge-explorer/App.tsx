@@ -37,6 +37,12 @@ import axios from "axios";
 
 const { height, width } = Dimensions.get("window");
 
+interface FileInfo {
+  uri: string;
+  name: string;
+  type: string;
+}
+
 type Vertex = {
   x: number;
   y: number;
@@ -61,9 +67,8 @@ export default function App() {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   const handleCollapsePress = () => bottomSheetRef.current?.collapse();
-  const snapToIndex = (index: number) => bottomSheetRef.current?.snapToIndex(index)
-
-  
+  const snapToIndex = (index: number) =>
+    bottomSheetRef.current?.snapToIndex(index);
 
   const [vertices, setVertices] = useState<Vertex[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
@@ -72,6 +77,7 @@ export default function App() {
   );
   const [selectedVertex, setSelectedVertex] = useState<Vertex | null>(null);
   const [visitedVertices, setVisitedVertices] = useState<number[]>([]);
+  const [visitedEdges, setVisitedEdges] = useState<number[]>([]);
   const [isDirected, setIsDirected] = useState<boolean>(false);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [showEdgeModal, setShowEdgeModal] = useState<boolean>(false);
@@ -82,12 +88,12 @@ export default function App() {
   const [newWeight, setNewWeight] = useState<string>("");
   const [idEdge, setIdEdge] = useState<number>(0);
 
-  useEffect(() => {
-    const windowWidth = Dimensions.get("window").width;
-    const windowHeight = Dimensions.get("window").height;
-    console.log(windowHeight);
-    console.log(windowWidth);
-  }, []);
+  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [showAlgorithmsModal, setShowAlgorithmsModal] =
+    useState<boolean>(false);
+  const [vertexToDelete, setVertexToDelete] = useState<Vertex | null>(null);
+  const [file, setFile] = useState<FileInfo | null>(null);
+  const [response, setResponse] = useState<string>("");
 
   const showEdges = () => {
     return edges
@@ -112,17 +118,6 @@ export default function App() {
       ],
     };
 
-    // Object.entries(graphData).forEach(([vertexKey, edges]) => {
-    //   const vertex1 = vertices.find((v) => v.id === parseInt(vertexKey));
-    //   if (vertex1) {
-    //     edges.forEach(([idAresta, destino, pesoAresta]) => {
-    //       const vertex2 = vertices.find((v) => v.id === destino);
-    //       if (vertex2) {
-    //         addEdgeFromBackend(idAresta, vertex1, vertex2, pesoAresta);
-    //       }
-    //     });
-    //   }
-    // });
     console.log(showEdges());
   }, [edges]);
 
@@ -299,168 +294,6 @@ export default function App() {
     setVisitedVertices([]);
   };
 
-  const dfs = async (startId: number) => {
-    const stack = [startId];
-    const visited = new Set<number>();
-
-    while (stack.length > 0) {
-      const currentId = stack.pop()!;
-      if (!visited.has(currentId)) {
-        visited.add(currentId);
-        setVisitedVertices(Array.from(visited));
-        await new Promise((res) => setTimeout(res, 2000)); // 2 segundos
-
-        const neighbors = edges
-          .filter(
-            (edge) =>
-              edge.x1 === vertices[currentId - 1].x &&
-              edge.y1 === vertices[currentId - 1].y
-          )
-          .map(
-            (edge) =>
-              vertices.find(
-                (vertex) => vertex.x === edge.x2 && vertex.y === edge.y2
-              )!.id
-          );
-
-        stack.push(...neighbors.filter((neighbor) => !visited.has(neighbor)));
-      }
-    }
-  };
-
-  const bfs = async (startId: number) => {
-    console.log("clicou no bfs");
-    try {
-      console.log("edgessss");
-      console.log(edges);
-      console.log("edgessss");
-      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
-        (acc, edge) => {
-          if (!acc[edge.origem]) acc[edge.origem] = [];
-          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
-          return acc;
-        },
-        {}
-      );
-
-      const response = await axios.post(
-        "http://192.168.15.6:5000/bfs",
-        {
-          Grafo: grafo,
-          start_node: startId,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      console.log("BFS Order:", response.data.bfs_order);
-      const bfsOrder = response.data.bfs_order;
-
-      bfsOrder.forEach((vertexId: number, index: number) => {
-        setTimeout(() => {
-          setVisitedVertices((prev) => [...prev, vertexId]);
-        }, index * 2000);
-      });
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-
-    // const queue = [startId];
-    // const visited = new Set<number>();
-
-    // while (queue.length > 0) {
-    //   const currentId = queue.shift()!;
-    //   if (!visited.has(currentId)) {
-    //     visited.add(currentId);
-    //     setVisitedVertices(Array.from(visited));
-    //     await new Promise((res) => setTimeout(res, 2000)); // 2 segundos
-
-    //     const neighbors = edges
-    //       .filter(
-    //         (edge) =>
-    //           edge.x1 === vertices[currentId - 1].x &&
-    //           edge.y1 === vertices[currentId - 1].y
-    //       )
-    //       .map(
-    //         (edge) =>
-    //           vertices.find(
-    //             (vertex) => vertex.x === edge.x2 && vertex.y === edge.y2
-    //           )!.id
-    //       );
-
-    //     queue.push(...neighbors.filter((neighbor) => !visited.has(neighbor)));
-    //   }
-    // }
-  };
-
-  const conexidade = async () => {
-    Alert.alert("conexidade");
-    const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
-      (acc, edge) => {
-        if (!acc[edge.origem]) acc[edge.origem] = [];
-        acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
-        return acc;
-      },
-      {}
-    );
-
-    const response = await axios.post(
-      "http://192.168.15.6:5000/conexo",
-      {
-        Grafo: grafo,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.data.resultado) {
-      console.log("É conexo");
-      Alert.alert("É conexo");
-    } else {
-      console.log("Não é conexo");
-      Alert.alert("Não é conexo");
-    }
-  };
-
-  const euleriano = async () => {
-    const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
-      (acc, edge) => {
-        if (!acc[edge.origem]) acc[edge.origem] = [];
-        acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
-        return acc;
-      },
-      {}
-    );
-    const response = await axios.post(
-      "http://192.168.15.6:5000/euleriano",
-      {
-        Grafo: grafo,
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    if (response.data.resultado) {
-      console.log("É euleriano");
-      Alert.alert("É euleriano");
-    } else {
-      console.log("Não é euleriano");
-      Alert.alert("Não é euleriano");
-    }
-  };
-
-  const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
-  const [vertexToDelete, setVertexToDelete] = useState<Vertex | null>(null);
-
   const handleLongPress = ({ nativeEvent }: any) => {
     const index = getActiveVertex(nativeEvent.x, nativeEvent.y);
     if (index !== null) {
@@ -486,9 +319,6 @@ export default function App() {
     }
   };
 
-  const [file, setFile] = useState<FileInfo | null>(null);
-  const [response, setResponse] = useState<string>("");
-
   const pickFile = async () => {
     try {
       const res = await DocumentPicker.getDocumentAsync({
@@ -510,12 +340,6 @@ export default function App() {
     }
   };
 
-  interface FileInfo {
-    uri: string;
-    name: string;
-    type: string;
-  }
-
   const uploadFile = async () => {
     if (file) {
       try {
@@ -531,7 +355,7 @@ export default function App() {
         formData.append("height", height.toString());
 
         const res = await axios.post(
-          "http://192.168.15.6:5000/upload",
+          "http://192.168.15.7:5000/upload",
           formData,
           {
             headers: {
@@ -552,15 +376,70 @@ export default function App() {
     }
   };
 
-  // New functions
-  const bipartiteCheck = () => {
+  // Algoritmos
+  const bipartiteCheck = async () => {
     Alert.alert("bipartiteCheck");
-    // Implement bipartite check
+    try {
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
+
+      const response = await axios.post(
+        "http://192.168.15.7:5000/bipartido",
+        {
+          Grafo: grafo,
+          nao_direcionado: !isDirected,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const resultado = response.data.resultado;
+      Alert.alert(`É bipartido: ${resultado}`);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
-  const cycleCheck = () => {
+  const cycleCheck = async () => {
     Alert.alert("cycleCheck");
-    // Implement cycle check
+    try {
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
+
+      const response = await axios.post(
+        "http://192.168.15.7:5000/ciclo",
+        {
+          Grafo: grafo,
+          nao_direcionado: !isDirected,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("BFS Order:", response.data.resultado);
+      const resultado = response.data.resultado;
+      Alert.alert(`Possui ciclo: ${resultado}`);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
   const connectedComponents = () => {
@@ -578,19 +457,117 @@ export default function App() {
     // Implement articulation points listing
   };
 
-  const bridgesCount = () => {
-    Alert.alert("bridgesCount");
-    // Implement bridge edges count
+  const bridgesCount = async () => {
+    try {
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
+
+      const response = await axios.post(
+        "http://192.168.15.7:5000/arestas_ponte",
+        {
+          Grafo: grafo,
+          nao_direcionado: !isDirected,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const resultado = response.data.resultado;
+      Alert.alert(`Arestas ponte: ${resultado}`);
+      setVisitedEdges(resultado)
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
-  const depthTree = () => {
-    Alert.alert("depthTree");
-    // Implement depth tree
+  const dfs = async (startId: number) => {
+    console.log("clicou no bfs");
+    try {
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
+
+      const response = await axios.post(
+        "http://192.168.15.7:5000/dfs",
+        {
+          Grafo: grafo,
+          start_node: startId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("BFS Order:", response.data.bfs_order);
+      const bfsOrder = response.data.bfs_order;
+      Alert.alert(`Dfs order: ${bfsOrder}`);
+
+      bfsOrder.forEach((vertexId: number, index: number) => {
+        setTimeout(() => {
+          setVisitedVertices((prev) => [...prev, vertexId]);
+        }, index * 2000);
+      });
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
-  const breadthTree = () => {
-    Alert.alert("breadthTree");
-    // Implement breadth tree
+  const bfs = async (startId: number) => {
+    console.log("clicou no bfs");
+    try {
+      console.log("edgessss");
+      console.log(edges);
+      console.log("edgessss");
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
+
+      const response = await axios.post(
+        "http://192.168.15.7:5000/bfs",
+        {
+          Grafo: grafo,
+          start_node: startId,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("BFS Order:", response.data.bfs_order);
+      const bfsOrder = response.data.bfs_order;
+      Alert.alert(`Bfs order: ${bfsOrder}`);
+
+      bfsOrder.forEach((vertexId: number, index: number) => {
+        setTimeout(() => {
+          setVisitedVertices((prev) => [...prev, vertexId]);
+        }, index * 2000);
+      });
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
   const minimumSpanningTree = () => {
@@ -618,23 +595,85 @@ export default function App() {
     // Implement transitive closure
   };
 
+  const conexidade = async () => {
+    Alert.alert("conexidade");
+    const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+      (acc, edge) => {
+        if (!acc[edge.origem]) acc[edge.origem] = [];
+        acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+        return acc;
+      },
+      {}
+    );
+
+    const response = await axios.post(
+      "http://192.168.15.7:5000/conexo",
+      {
+        Grafo: grafo,
+        nao_direcionado: isDirected,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.resultado) {
+      console.log("É conexo");
+      Alert.alert("É conexo");
+    } else {
+      console.log("Não é conexo");
+      Alert.alert("Não é conexo");
+    }
+  };
+
+  const euleriano = async () => {
+    const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+      (acc, edge) => {
+        if (!acc[edge.origem]) acc[edge.origem] = [];
+        acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+        return acc;
+      },
+      {}
+    );
+    const response = await axios.post(
+      "http://192.168.15.7:5000/euleriano",
+      {
+        Grafo: grafo,
+        nao_direcionado: !isDirected,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (response.data.resultado) {
+      console.log("É euleriano");
+      Alert.alert("É euleriano");
+    } else {
+      console.log("Não é euleriano");
+      Alert.alert("Não é euleriano");
+    }
+  };
+
   return (
     <GestureHandlerRootView>
       <View style={styles.container}>
         <View style={styles.optionsContainer}>
           <TouchableOpacity
-            style={[styles.optionButton, isDirected && styles.selectedOption]}
-            onPress={() => setIsDirected(true)}
+            style={styles.clearButton}
+            onPress={() => setShowAlgorithmsModal(!showAlgorithmsModal)}
           >
-            <Text style={styles.optionButtonText}>Direcionado</Text>
+            <Text style={styles.clearButtonText}>Settings</Text>
           </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.optionButton, !isDirected && styles.selectedOption]}
-            onPress={() => setIsDirected(false)}
-          >
-            <Text style={styles.optionButtonText}>Não direcionado</Text>
+          <TouchableOpacity style={styles.clearButton} onPress={handleReset}>
+            <Text style={styles.clearButtonText}>Reset</Text>
           </TouchableOpacity>
         </View>
+
         <View
           style={styles.svgContainer}
           onTouchStart={(e) => {
@@ -665,7 +704,11 @@ export default function App() {
                   y1={edge.y1}
                   x2={edge.x2}
                   y2={edge.y2}
-                  stroke={"black"}
+                  stroke={
+                    visitedEdges.includes(edge.idAresta)
+                      ? "green"
+                      : "black"
+                  }
                   strokeWidth={8}
                   onPress={() => handleEdgePress(edge.idAresta)}
                   markerEnd={edge.directed ? "url(#arrowhead)" : undefined}
@@ -805,124 +848,171 @@ export default function App() {
             </View>
           </Modal>
         )}
-        <BottomSheet
-          snapPoints={snapPoints}
-          ref={bottomSheetRef}
-          backgroundStyle={{ backgroundColor: "#f8f8f8" }}
-          style={{ alignItems: "center" }}
-        >
-          
-          <BottomSheetView>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={handleReset}
-              >
-                <Text style={styles.clearButtonText}>Reset</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={() => dfs(1)}
-              >
-                <Text style={styles.clearButtonText}>DFS</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={() => bfs(1)}
-              >
-                <Text style={styles.clearButtonText}>BFS</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.clearButton} onPress={() => handleCollapsePress()}>
-                <Text style={styles.clearButtonText}>Eulerian</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.clearButton} onPress={conexidade}>
-                <Text style={styles.clearButtonText}>Connectivity</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={bipartiteCheck}
-              >
-                <Text style={styles.clearButtonText}>Check Bipartiteness</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.clearButton} onPress={cycleCheck}>
-                <Text style={styles.clearButtonText}>Check Cycles</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={connectedComponents}
-              >
-                <Text style={styles.clearButtonText}>Connected Components</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={stronglyConnectedComponents}
-              >
-                <Text style={styles.clearButtonText}>
-                  Strongly Connected Components
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={articulationPoints}
-              >
-                <Text style={styles.clearButtonText}>Articulation Points</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={bridgesCount}
-              >
-                <Text style={styles.clearButtonText}>Bridge Edges</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.clearButton} onPress={depthTree}>
-                <Text style={styles.clearButtonText}>Depth Tree</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={breadthTree}
-              >
-                <Text style={styles.clearButtonText}>Breadth Tree</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={topologicalSort}
-              >
-                <Text style={styles.clearButtonText}>Topological Sort</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={shortestPath}
-              >
-                <Text style={styles.clearButtonText}>Shortest Path</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.clearButton} onPress={maxFlow}>
-                <Text style={styles.clearButtonText}>Max Flow</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.clearButton}
-                onPress={transitiveClosure}
-              >
-                <Text style={styles.clearButtonText}>Transitive Closure</Text>
-              </TouchableOpacity>
-            </View>
-          </BottomSheetView>
-        </BottomSheet>
       </View>
+      {showAlgorithmsModal && (
+        <Modal transparent={true} animationType="fade">
+          <View style={styles.optionsContainer}>
+            <TouchableOpacity
+              style={[styles.optionButton, isDirected && styles.selectedOption]}
+              onPress={() => setIsDirected(true)}
+            >
+              <Text style={styles.optionButtonText}>Direcionado</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.optionButton,
+                !isDirected && styles.selectedOption,
+              ]}
+              onPress={() => setIsDirected(false)}
+            >
+              <Text style={styles.optionButtonText}>Não direcionado</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.modalContainer}>
+            <View
+              style={{
+                width: "90%",
+                padding: 40,
+                backgroundColor: "#ffffff", // Fundo branco
+                borderRadius: 10, // Bordas arredondadas
+                shadowColor: "#000", // Sombra
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.2,
+                shadowRadius: 4,
+                elevation: 5,
+              }}
+            >
+              {/* Botão para fechar o modal */}
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setShowAlgorithmsModal(false)}
+              >
+                <Text style={styles.closeButtonText}>X</Text>
+              </TouchableOpacity>
+              <View>
+                <Text style={{ textAlign: "center", fontWeight: "bold" }}>
+                  Graphs algorithms
+                </Text>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => bfs(1)}
+                >
+                  <Text style={styles.clearButtonText}>BFS</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={() => dfs(1)}
+                >
+                  <Text style={styles.clearButtonText}>DFS</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={conexidade}
+                >
+                  <Text style={styles.clearButtonText}>Connectivity</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={bipartiteCheck}
+                >
+                  <Text style={styles.clearButtonText}>
+                    Check Bipartiteness
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={cycleCheck}
+                >
+                  <Text style={styles.clearButtonText}>Check Cycles</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={connectedComponents}
+                >
+                  <Text style={styles.clearButtonText}>
+                    Connected Components
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={stronglyConnectedComponents}
+                >
+                  <Text style={styles.clearButtonText}>
+                    Strongly Connected Components
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={articulationPoints}
+                >
+                  <Text style={styles.clearButtonText}>
+                    Articulation Points
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={bridgesCount}
+                >
+                  <Text style={styles.clearButtonText}>Bridge Edges</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={topologicalSort}
+                >
+                  <Text style={styles.clearButtonText}>Topological Sort</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={shortestPath}
+                >
+                  <Text style={styles.clearButtonText}>Shortest Path</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.clearButton} onPress={maxFlow}>
+                  <Text style={styles.clearButtonText}>Max Flow</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={transitiveClosure}
+                >
+                  <Text style={styles.clearButtonText}>Transitive Closure</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={euleriano}
+                >
+                  <Text style={styles.clearButtonText}>Eulerian</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity style={styles.clearButton} onPress={pickFile}>
+                  <Text style={styles.clearButtonText}>pickFile</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={uploadFile}
+                >
+                  <Text style={styles.clearButtonText}>uploadFile</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
     </GestureHandlerRootView>
   );
 }
@@ -967,14 +1057,16 @@ const styles = StyleSheet.create({
   clearButton: {
     marginHorizontal: "1%",
     backgroundColor: "black",
+    justifyContent: "center",
     paddingVertical: 10,
     paddingHorizontal: 10,
-    width: "45%",
+    width: "60%",
     borderRadius: 5,
   },
   clearButtonText: {
     color: "white",
     fontSize: 16,
+    textAlign: "center",
     fontWeight: "bold",
   },
   modalContainer: {
@@ -984,7 +1076,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    width: 300, // Aumenta a largura do modal
+    width: 300,
     padding: 40,
     backgroundColor: "#ffffff", // Fundo branco
     borderRadius: 10, // Bordas arredondadas

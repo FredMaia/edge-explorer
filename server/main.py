@@ -12,8 +12,13 @@ CORS(app)
 
 UPLOAD_FOLDER = 'uploads/'
 
-
-
+def convert_graph(data):
+    try:
+        graph = data['Grafo']
+        converted_graph = {int(key): [(int(edge[0]), int(edge[1]), float(edge[2])) for edge in edges] for key, edges in graph.items()}
+        return converted_graph, None
+    except Exception as e:
+        return None, 'Invalid input'
 
 def gerar_vertices(v: int, width: int, height: int) -> list:
     vertices = []
@@ -80,18 +85,163 @@ def arvore_largura(arestas: dict, vertice_inicial: int) -> int:
 
     return sequencia_vertices
 
-def conexo(grafo):
-    vertices_visitados = arvore_largura(grafo, 1)
-    return len(vertices_visitados) == len(grafo.keys())
+def arvore_profundidade(grafo: dict, v: int) -> list:
+    arvore_dfs = []  
+    sequencia_vertices = [] 
+    pilha = [(grafo[v][0][0], v)]  
+    visitado = set()
 
+    while pilha:
+        vertice = pilha.pop()
+
+        
+        if vertice[1] not in visitado:
+            visitado.add(vertice[1])
+            sequencia_vertices.append(vertice[1])  
+            arvore_dfs.append(vertice[0]) 
+
+      
+            for (id_aresta, vizinho, peso) in sorted(grafo[vertice[1]], key=lambda x: x[1], reverse=True):
+                if vizinho not in visitado:
+                    pilha.append((id_aresta, vizinho))
+
+    
+    if 0 in arvore_dfs:
+        arvore_dfs.remove(0)
+
+    return sequencia_vertices  # Retorna a sequência de vértices visitados
+
+def conexo(v: int, grafo: dict, nao_direcionado: bool):
+    print("asdassaddssd")
+    print(grafo)
+    grafo_temp = {k: v[:] for k, v in grafo.items()}  # copiar grafo
+
+    visitado = {k: False for k in grafo_temp.keys()}  # usar dicionário para visitação
+
+    pilha = [v]
+
+    while pilha:
+        vertice = pilha.pop()
+
+        # Se o vértice ainda não foi visitado
+        if not visitado[vertice]:
+            visitado[vertice] = True
+
+            # Adicionar vizinhos não visitados à pilha
+            for vizinho in grafo_temp[vertice]:
+                if not visitado[vizinho[1]]:
+                    pilha.append(vizinho[1])
+
+    # Verifica se todos os vértices foram visitados
+    if all(visitado.values()):
+        return 1
+    return 0
+
+def euleriano(arestas: dict) -> int:
+    # Para ver se é euleriano basta verificar se todos os vértices possuem grau par. Se sim, é euleriano (o grafo precisa ser conexo)
+    ############# CHAMAR FUNÇÃO DE VER SE É CONEXO (se for conexo, continuar na função, se não for, retornar 0)
+    for vertice in arestas: 
+        # Para cada vértice, ver quantas arestas ele possui. 
+        # Ex.: 1: [(0, 0, 1), (1, 2, 1), (2, 3, 1)]. Nesse caso o vértice 1 tem grau 3 e consequentemente resto 1
+        if (len(arestas[vertice]) % 2 == 1):
+            return 0
+    return 1
+
+def possui_ciclo(vertices, arestas, nao_direcionado):
+    visitado = set()
+    pai = {}
+
+    def busca_profundidade(atual, anterior):
+        visitado.add(atual)
+        for id_aresta, vizinho, peso in arestas[atual]:
+            if vizinho not in visitado:
+                pai[vizinho] = atual
+                if busca_profundidade(vizinho, atual):
+                    return 1
+            elif vizinho != anterior:
+                # Encontrou um ciclo
+                return 1
+        return 0
+
+    # Verificar todos os componentes do grafo
+    for vertice in vertices:
+        if vertice not in visitado:
+            if busca_profundidade(vertice, -1):
+                return 1
+    return 0
+
+def bipartido(grafo, nao_direcionado):
+    if not nao_direcionado:
+        return 0
+    
+    def bfs_bipartido(grafo, origem, cor):
+        fila = deque([origem])
+        cor[origem] = 0
+
+        while fila:
+            no_atual = fila.popleft()
+            cor_atual = cor[no_atual]
+
+            for id, vizinho, peso in grafo.get(no_atual, []):
+                if vizinho not in cor:  # Se o vizinho ainda não foi colorido
+
+                    # Atribui a cor oposta ao vizinho
+                    cor[vizinho] = 1 - cor_atual
+                    fila.append(vizinho)
+                elif cor[vizinho] == cor_atual:  # Se o vizinho tem a mesma cor, o grafo não é bipartido
+                    return False
+        return True
+
+    cor = {}  # Dicionário para armazenar as cores dos vértices
+
+    # Verificar se cada componente do grafo é bipartida
+    for origem in grafo:
+        if origem not in cor:  # Se o vértice ainda não foi visitado
+            if not bfs_bipartido(grafo, origem, cor):
+                return 0
+
+    return 1
+
+def encontrarPontes(grafo, nao_direcionado):
+    if not nao_direcionado:
+        return -1
+
+    n = len(grafo) + 1  # Ajuste para considerar que as chaves começam em 1
+    descoberta = [-1] * n
+    menorTempo = [-1] * n
+    pai = [-1] * n
+    pontes = []
+
+    def dfs(u, tempo):
+        descoberta[u] = menorTempo[u] = tempo
+        tempo += 1
+
+        for (idAresta, v, peso) in grafo[u]:
+            if descoberta[v] == -1:  # Se v não foi visitado
+                pai[v] = u
+                tempo = dfs(v, tempo)
+
+                menorTempo[u] = min(menorTempo[u], menorTempo[v])
+
+                # Se a menor altura alcançável de v é maior que descoberta de u, (u, v) é uma ponte
+                if menorTempo[v] > descoberta[u]:
+                    pontes.append(idAresta)
+
+            elif v != pai[u]:  # Atualiza menorTempo[u] para back edge
+                menorTempo[u] = min(menorTempo[u], descoberta[v])
+
+        return tempo
+
+    # Chama DFS para cada vértice não visitado
+    for i in range(1, n):  # Ajuste para iteração de 1 até n-1
+        if descoberta[i] == -1:
+            dfs(i, 0)
+
+    return sorted(pontes)
+
+# OK
 @app.route('/bfs', methods=['POST'])
 def bfs_route():
-    # data = request.json
-    # print(data)
-    # grafo = data.get('Grafo')
-    # print(grafo)
-    # start_node = data.get('start_node')
-    # print(start)
     data = request.get_json()
     print(data)
 
@@ -111,11 +261,11 @@ def bfs_route():
     
     return jsonify({'bfs_order': bfs_result})
 
-@app.route('/conexo', methods=['POST'])
-def is_connected():
+# OK
+@app.route('/dfs', methods=['POST'])
+def dfs_route():
     data = request.get_json()
     print(data)
-
 
     try: 
         graph = data['Grafo']
@@ -127,50 +277,32 @@ def is_connected():
     except Exception as e:
         return jsonify({'error': 'Invalid input'}), 400
     
-    resultado = conexo(converted_graph)
+    print(converted_graph)
+    bfs_result = arvore_profundidade(converted_graph, 1)
+    print(f"resultado do bfs: {bfs_result}")    
+    
+    return jsonify({'bfs_order': bfs_result})
+
+#OK
+@app.route('/conexo', methods=['POST'])
+def is_connected():
+    data = request.get_json()
+    print(data)
+
+    try: 
+        nao_direcionado = data['nao_direcionado']
+        graph = data['Grafo']
+    
+        converted_graph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            converted_graph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    print(converted_graph)
+    resultado = conexo(1, converted_graph, nao_direcionado)
 
     return jsonify({'resultado': resultado})
-
-
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
-    
-    file = request.files['file']
-    
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    if file:
-        # Save the file using the UPLOAD_FOLDER variable
-        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
-        try:
-            
-            
-            print(f"Saving file at: {file_path}")
-            file.save(file_path)
-            print("File saved successfully")
-        except Exception as save_error:
-            print(f"Error saving file: {save_error}")
-            return jsonify({'error': 'Failed to save file'}), 500
-
-        try:
-            print(f"Processing file at: {file_path}")
-            width = request.form.get('width')
-            height = request.form.get('height')
-
-            width = int(float(width))
-            height = int(float(height))
-
-            v, arestas, nao_direcionado = ler_grafo(filepath=file_path, nao_direcionado="direcionado")
-            dados_json = preparar_dados_para_frontend(len(v), arestas, nao_direcionado, width, height)
-            print(dados_json)
-            return dados_json, 200, {'Content-Type': 'application/json'}
-        except Exception as process_error:
-            print(f"Error processing graph: {process_error}")
-            return jsonify({'error': 'Failed to process graph'}), 500
 
 @app.route("/euleriano", methods=['POST'])
 def is_euleriano():
@@ -178,6 +310,7 @@ def is_euleriano():
      
     try: 
         graph = data['Grafo']
+        nao_direcionado = data['nao_direcionado']
     
         converted_graph = {}
         for key, edges in graph.items():
@@ -186,9 +319,8 @@ def is_euleriano():
     except Exception as e:
         return jsonify({'error': 'Invalid input'}), 400
 
-    if not conexo(converted_graph):
+    if not conexo(1, converted_graph, nao_direcionado):
         return jsonify({'resultado': 0}) 
-    
 
     for vertice in converted_graph: 
         if (len(converted_graph[vertice]) % 2 == 1):
@@ -196,61 +328,64 @@ def is_euleriano():
 
     return jsonify({'resultado': 1}) 
 
-
-@app.route('/', methods=['GET'])
-def get_route():
-    return jsonify({'message': "working"})
-
-
-
-
-def convert_graph(data):
-    try:
-        graph = data['Grafo']
-        converted_graph = {int(key): [(int(edge[0]), int(edge[1]), float(edge[2])) for edge in edges] for key, edges in graph.items()}
-        return converted_graph, None
-    except Exception as e:
-        return None, 'Invalid input'
-
-@app.route('/conexo', methods=['POST'])
-def verificar_conexo():
-    data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement the connectivity check here
-    result = "is_connected(graph)"
-    return jsonify({'conexo': result})
-
+#OK
 @app.route('/bipartido', methods=['POST'])
 def verificar_bipartido():
     data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement bipartite check here
-    result = "is_bipartite(graph)"
-    return jsonify({'bipartido': result})
+    print(data)
 
+    try: 
+        nao_direcionado = data['nao_direcionado']
+        graph = data['Grafo']
+    
+        convertedGraph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            convertedGraph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+            
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    print(convertedGraph)
+    resultado = bipartido(convertedGraph, nao_direcionado)
+
+    return jsonify({'resultado': resultado})
+
+#OK
 @app.route('/euleriano', methods=['POST'])
 def verificar_euleriano():
     data = request.get_json()
     graph, error = convert_graph(data)
     if error:
         return jsonify({'error': error}), 400
-    # Implement Eulerian check here
-    result = "is_eulerian(graph)"
+
+    if conexo(1, graph, True) and euleriano(graph):
+        result = 1
+    else:
+        result = 0
+
     return jsonify({'euleriano': result})
 
+#OK
 @app.route('/ciclo', methods=['POST'])
 def verificar_ciclo():
     data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement cycle check here
-    result = "has_cycle(graph"
-    return jsonify({'ciclo': result})
+    print(data)
+
+    try: 
+        nao_direcionado = data['nao_direcionado']
+        graph = data['Grafo']
+    
+        converted_graph_ = {}
+        for key, edges in graph.items():
+            node = int(key)
+            converted_graph_[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+            
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    print(converted_graph_)
+    resultado = possui_ciclo(converted_graph_.keys(), converted_graph_, nao_direcionado)
+
+    return jsonify({'resultado': resultado})
 
 @app.route('/componentes_conexos', methods=['POST'])
 def calcular_componentes_conexos():
@@ -282,35 +417,28 @@ def imprimir_pontos_articulacao():
     result = "articulation_points(graph)"
     return jsonify({'pontos_articulacao': result})
 
+#OK
 @app.route('/arestas_ponte', methods=['POST'])
 def calcular_arestas_ponte():
     data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement bridge edges count here
-    result = "count_bridges(graph)"
-    return jsonify({'arestas_ponte': result})
+    print(data)
 
-@app.route('/arvore_profundidade', methods=['POST'])
-def imprimir_arvore_profundidade():
-    data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement depth tree here
-    result = "depth_tree(graph)"
-    return jsonify({'arvore_profundidade': result})
+    try: 
+        nao_direcionado = data['nao_direcionado']
+        graph = data['Grafo']
+    
+        convertedGraph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            convertedGraph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+            
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    print(convertedGraph)
+    resultado = encontrarPontes(convertedGraph, nao_direcionado)
 
-@app.route('/arvore_largura', methods=['POST'])
-def imprimir_arvore_largura():
-    data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement breadth tree here
-    result = "breadth_tree(graph)"
-    return jsonify({'arvore_largura': result})
+    return jsonify({'resultado': resultado})
+
 
 @app.route('/arvore_geradora_minima', methods=['POST'])
 def calcular_arvore_geradora_minima():
@@ -365,6 +493,45 @@ def calcular_fecho_transitivo():
 
 
 
+
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file:
+        # Save the file using the UPLOAD_FOLDER variable
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        try:
+            
+            
+            print(f"Saving file at: {file_path}")
+            file.save(file_path)
+            print("File saved successfully")
+        except Exception as save_error:
+            print(f"Error saving file: {save_error}")
+            return jsonify({'error': 'Failed to save file'}), 500
+
+        try:
+            print(f"Processing file at: {file_path}")
+            width = request.form.get('width')
+            height = request.form.get('height')
+
+            width = int(float(width))
+            height = int(float(height))
+
+            v, arestas, nao_direcionado = ler_grafo(filepath=file_path, nao_direcionado="direcionado")
+            dados_json = preparar_dados_para_frontend(len(v), arestas, nao_direcionado, width, height)
+            print(dados_json)
+            return dados_json, 200, {'Content-Type': 'application/json'}
+        except Exception as process_error:
+            print(f"Error processing graph: {process_error}")
+            return jsonify({'error': 'Failed to process graph'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

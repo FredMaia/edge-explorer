@@ -442,19 +442,101 @@ export default function App() {
     }
   };
 
-  const connectedComponents = () => {
+  const connectedComponents = async () => {
     Alert.alert("connectedComponents");
-    // Implement connected components count
+    try {
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
+
+      const response = await axios.post(
+        "http://192.168.15.7:5000/componentes_conexos",
+        {
+          Grafo: grafo,
+          nao_direcionado: !isDirected,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const resultado = response.data.resultado;
+      Alert.alert(`There's ${resultado} connected components.`);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
-  const stronglyConnectedComponents = () => {
+  const stronglyConnectedComponents = async () => {
     Alert.alert("stronglyConnectedComponents");
-    // Implement strongly connected components count
+    try {
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
+
+      const response = await axios.post(
+        "http://192.168.15.7:5000/componentes_fortes",
+        {
+          Grafo: grafo,
+          nao_direcionado: !isDirected,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const resultado = response.data.resultado;
+      Alert.alert(`There's ${resultado} strongly connected components.`);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
-  const articulationPoints = () => {
+  const articulationPoints = async () => {
     Alert.alert("articulationPoints");
-    // Implement articulation points listing
+    try {
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
+
+      const response = await axios.post(
+        "http://192.168.15.7:5000/pontos_articulacao",
+        {
+          Grafo: grafo,
+          nao_direcionado: !isDirected,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const resultado = response.data.resultado;
+      Alert.alert(`Articulation points: ${resultado}.`);
+      setVisitedVertices(resultado);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
   const bridgesCount = async () => {
@@ -483,7 +565,7 @@ export default function App() {
 
       const resultado = response.data.resultado;
       Alert.alert(`Arestas ponte: ${resultado}`);
-      setVisitedEdges(resultado)
+      setVisitedEdges(resultado);
     } catch (error) {
       console.error("Fetch error:", error);
     }
@@ -570,9 +652,35 @@ export default function App() {
     }
   };
 
-  const minimumSpanningTree = () => {
-    Alert.alert("minimumSpanningTree");
-    // Implement MST value calculation
+  const minimumSpanningTree = async () => {
+    try {
+      const grafo = edges.reduce<{ [key: number]: [number, number, number][] }>(
+        (acc, edge) => {
+          if (!acc[edge.origem]) acc[edge.origem] = [];
+          acc[edge.origem].push([edge.idAresta, edge.destino, edge.pesoAresta]);
+          return acc;
+        },
+        {}
+      );
+
+      const response = await axios.post(
+        "http://192.168.15.7:5000/arvore_geradora_minima",
+        {
+          Grafo: grafo,
+          nao_direcionado: !isDirected,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const resultado = response.data.resultado;
+      Alert.alert(`Min tree: ${resultado}.`);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
   };
 
   const topologicalSort = () => {
@@ -705,9 +813,7 @@ export default function App() {
                   x2={edge.x2}
                   y2={edge.y2}
                   stroke={
-                    visitedEdges.includes(edge.idAresta)
-                      ? "green"
-                      : "black"
+                    visitedEdges.includes(edge.idAresta) ? "green" : "black"
                   }
                   strokeWidth={8}
                   onPress={() => handleEdgePress(edge.idAresta)}
@@ -998,6 +1104,15 @@ export default function App() {
                   <Text style={styles.clearButtonText}>Eulerian</Text>
                 </TouchableOpacity>
               </View>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={styles.clearButton}
+                  onPress={minimumSpanningTree}
+                >
+                  <Text style={styles.clearButtonText}>Min tree</Text>
+                </TouchableOpacity>
+              </View>
+
               <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.clearButton} onPress={pickFile}>
                   <Text style={styles.clearButtonText}>pickFile</Text>

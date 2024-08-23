@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from collections import deque
+from collections import deque, defaultdict
+import heapq
 import os
 import random
 import json
@@ -239,6 +240,175 @@ def encontrarPontes(grafo, nao_direcionado):
 
     return sorted(pontes)
 
+def componentes_conexas(grafo: dict, nao_orientado) -> list:
+    if not nao_orientado:
+        return -1
+
+    contador = 0
+    visitado = [False] * (len(grafo) + 1)  # Ajuste para que a lista acomode índices começando em 1
+
+    pilha = []
+    comp_conexos = []
+    for i in range(1, len(visitado)):  # Começa em 1, não em 0
+        if not visitado[i]:  # Se o vértice ainda não foi visitado
+            comp_conexos1 = []
+            contador += 1
+            pilha.append(i)
+            while pilha:
+                vertice = pilha.pop()
+                if not visitado[vertice]:
+                    comp_conexos1.append(vertice)
+                    visitado[vertice] = True
+
+                    # Adicionar vizinhos não visitados à pilha
+                    for vizinho in grafo[vertice]:
+                        if not visitado[vizinho[1]]:
+                            pilha.append(vizinho[1])
+
+            # Adicionar o componente conexo encontrado à lista principal
+            comp_conexos.append(sorted(comp_conexos1))
+
+    return len(comp_conexos)
+
+def componentes_fortemente_conexos(v, grafo, nao_direcionado):
+    if nao_direcionado:
+        return -1
+
+    def dfs(v, visitado, pilha):
+        visitado.add(v)  # Marca o vértice como visitado
+        for _, vizinho, _ in grafo.get(v, []):  # Explora todos os vizinhos do vértice atual
+            if vizinho not in visitado:
+                dfs(vizinho, visitado, pilha)
+        pilha.append(v)  # Adiciona o vértice na pilha após explorar todos os vizinhos
+
+    def transpor_grafo(grafo):
+        transposto = {}
+        for origem in grafo:
+            for id_aresta, destino, peso in grafo[origem]:
+                if destino not in transposto:
+                    transposto[destino] = []
+                transposto[destino].append((id_aresta, origem, peso))
+        return transposto
+
+    def dfs_transposto(v, visitado, componente, grafo_transposto):
+        visitado.add(v)  # Marca o vértice como visitado
+        componente.append(v)
+        for _, vizinho, _ in grafo_transposto.get(v, []):  # Explora todos os vizinhos no grafo transposto
+            if vizinho not in visitado:
+                dfs_transposto(vizinho, visitado, componente, grafo_transposto)
+
+    pilha = []
+    visitado = set()
+
+    # Passo 1: Preenchendo a pilha com a ordem de finalização dos vértices
+    for vertice in grafo:
+        if vertice not in visitado:
+            dfs(vertice, visitado, pilha)
+
+    # Passo 2: Transpor o grafo
+    grafo_transposto = transpor_grafo(grafo)
+
+    # Passo 3: Processar os vértices na ordem inversa da finalização
+    visitado = set()
+    componentes = []
+    while pilha:
+        v = pilha.pop()
+        if v not in visitado:
+            componente = []
+            dfs_transposto(v, visitado, componente, grafo_transposto)
+            componentes.append(componente)
+
+    return len(componentes)
+
+def encontra_vertice_articulacao(grafo, nao_direcionado):
+    if not nao_direcionado:
+        return -1
+
+    # Estruturas para a busca em profundidade
+    tempo = [0]  # Relógio de tempo da DFS
+    num_vertices = len(grafo)
+    descoberta = [-1] * (num_vertices + 1)  # Tempo de descoberta dos vértices na DFS
+    menor = [-1] * (num_vertices + 1)  # Menor tempo de descoberta acessível
+    pai = [-1] * (num_vertices + 1)  # Vértice pai na DFS
+    articulacao = [False] * (num_vertices + 1)  # Marca se um vértice é de articulação
+    vertices_articulacao = []  # Lista de vértices de articulação
+
+    def dfs(v):
+        # Aumenta o tempo e marca o tempo de descoberta do vértice
+        descoberta[v] = menor[v] = tempo[0]
+        tempo[0] += 1
+        filhos = 0  # Conta o número de filhos na DFS
+
+        for (id_aresta, vizinho, peso) in grafo[v]:
+            if descoberta[vizinho] == -1:  # Se vizinho não foi descoberto
+                pai[vizinho] = v
+                filhos += 1
+                dfs(vizinho)
+
+                # Atualiza o menor tempo de descoberta acessível
+                menor[v] = min(menor[v], menor[vizinho])
+
+                # Checa condição para que v seja vértice de articulação
+                if pai[v] == -1 and filhos > 1:  # Raiz da DFS com mais de 1 filho
+                    articulacao[v] = True
+                if pai[v] != -1 and menor[vizinho] >= descoberta[v]:
+                    articulacao[v] = True
+
+            elif vizinho != pai[v]:  # Atualiza menor[v] para back edge
+                menor[v] = min(menor[v], descoberta[vizinho])
+
+    # Chama DFS para cada vértice não visitado
+    for i in sorted(grafo.keys()):  # Ordena os vértices em ordem lexicográfica
+        if descoberta[i] == -1:
+            dfs(i)
+
+    # Coleta os vértices de articulação
+    for i in range(1, num_vertices + 1):  # Ajusta para começar de 1
+        if articulacao[i]:
+            vertices_articulacao.append(i)
+
+    return vertices_articulacao
+
+def arvore_minima(vertices, arestas, nao_direcionado):
+    if not nao_direcionado:
+        return -1
+
+    if not arestas:
+        return -1  # Retorna -1 se o dicionário de arestas estiver vazio
+
+    visitados = set()
+    pq = []
+    total_minimo = 0
+    arestas_selecionadas = []  # Lista para armazenar os IDs das arestas selecionadas
+
+    # Seleciona um vértice inicial (o primeiro vértice da lista de chaves do dicionário)
+    inicial = next(iter(arestas))
+    visitados.add(inicial)
+
+    # Adiciona as arestas conectadas ao vértice inicial na fila de prioridades
+    for id_aresta, vertice, peso in arestas[inicial]:
+        heapq.heappush(pq, (peso, vertice, id_aresta))
+
+    # Processa a fila de prioridades para encontrar a árvore geradora mínima
+    while pq:
+        peso, v, id_aresta = heapq.heappop(pq)
+        if v not in visitados:
+            visitados.add(v)
+            total_minimo += peso
+            arestas_selecionadas.append(id_aresta)  # Armazena o ID da aresta
+
+            # Verifica se o vértice atual tem arestas associadas
+            if v in arestas:
+                for id_proxima_aresta, proximo, p in arestas[v]:
+                    if proximo not in visitados:
+                        heapq.heappush(pq, (p, proximo, id_proxima_aresta))
+
+    # Verifica se todos os vértices foram visitados (grafo conectado)
+    if len(visitados) != len(vertices):
+        return -1  # Retorna -1 se o grafo não for conectado
+
+    return arestas_selecionadas
+
 # OK
 @app.route('/bfs', methods=['POST'])
 def bfs_route():
@@ -304,6 +474,7 @@ def is_connected():
 
     return jsonify({'resultado': resultado})
 
+#
 @app.route("/euleriano", methods=['POST'])
 def is_euleriano():
     data = request.get_json()
@@ -351,21 +522,6 @@ def verificar_bipartido():
     return jsonify({'resultado': resultado})
 
 #OK
-@app.route('/euleriano', methods=['POST'])
-def verificar_euleriano():
-    data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-
-    if conexo(1, graph, True) and euleriano(graph):
-        result = 1
-    else:
-        result = 0
-
-    return jsonify({'euleriano': result})
-
-#OK
 @app.route('/ciclo', methods=['POST'])
 def verificar_ciclo():
     data = request.get_json()
@@ -387,35 +543,76 @@ def verificar_ciclo():
 
     return jsonify({'resultado': resultado})
 
+#ok
 @app.route('/componentes_conexos', methods=['POST'])
 def calcular_componentes_conexos():
     data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement connected components count here
-    result = "count_connected_components(graph)"
-    return jsonify({'componentes_conexos': result})
+    print(data)
 
+    try: 
+        nao_direcionado = data['nao_direcionado']
+        graph = data['Grafo']
+
+        print(nao_direcionado)
+        print(graph)
+    
+        convertedGraph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            convertedGraph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+            
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    print(convertedGraph)
+    resultado = componentes_conexas(convertedGraph, nao_direcionado)
+    print(resultado)
+    return jsonify({'resultado': resultado})
+
+#ok
 @app.route('/componentes_fortes', methods=['POST'])
 def calcular_componentes_fortes():
     data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement strongly connected components count here
-    result = "count_strongly_connected_components(graph)"
-    return jsonify({'componentes_fortes': result})
+    print(data)
 
+    try: 
+        nao_direcionado = data['nao_direcionado']
+        graph = data['Grafo']
+
+        print(nao_direcionado)
+        print(graph)
+    
+        convertedGraph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            convertedGraph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+            
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    print(convertedGraph)
+    resultado = componentes_fortemente_conexos(1, convertedGraph, nao_direcionado)
+    print(resultado)
+    return jsonify({'resultado': resultado})
+
+# ok
 @app.route('/pontos_articulacao', methods=['POST'])
 def imprimir_pontos_articulacao():
     data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement articulation points listing here
-    result = "articulation_points(graph)"
-    return jsonify({'pontos_articulacao': result})
+
+    try: 
+        nao_direcionado = data['nao_direcionado']
+        graph = data['Grafo']
+
+        convertedGraph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            convertedGraph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+            
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    print(convertedGraph)
+    resultado = encontra_vertice_articulacao(convertedGraph, nao_direcionado)
+    print(resultado)
+    return jsonify({'resultado': resultado})
 
 #OK
 @app.route('/arestas_ponte', methods=['POST'])
@@ -439,16 +636,26 @@ def calcular_arestas_ponte():
 
     return jsonify({'resultado': resultado})
 
-
+#
 @app.route('/arvore_geradora_minima', methods=['POST'])
 def calcular_arvore_geradora_minima():
     data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement MST value calculation here
-    result = "minimum_spanning_tree(graph)"
-    return jsonify({'arvore_geradora_minima': result})
+
+    try: 
+        nao_direcionado = data['nao_direcionado']
+        graph = data['Grafo']
+    
+        convertedGraph = {}
+        for key, edges in graph.items():
+            node = int(key)
+            convertedGraph[node] = [(edge[0], edge[1], edge[2]) for edge in edges]
+            
+    except Exception as e:
+        return jsonify({'error': 'Invalid input'}), 400
+    print(convertedGraph)
+    resultado = arvore_minima(convertedGraph.keys(), convertedGraph, nao_direcionado)
+    
+    return jsonify({'resultado': resultado})
 
 @app.route('/ordenacao_topologica', methods=['POST'])
 def imprimir_ordenacao_topologica():
@@ -490,10 +697,6 @@ def calcular_fecho_transitivo():
     result = "transitive_closure(graph)"
     return jsonify({'fecho_transitivo': result})
 
-
-
-
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -526,7 +729,7 @@ def upload_file():
             height = int(float(height))
 
             v, arestas, nao_direcionado = ler_grafo(filepath=file_path, nao_direcionado="direcionado")
-            dados_json = preparar_dados_para_frontend(len(v), arestas, nao_direcionado, width, height)
+            dados_json = preparar_dados_para_frontend(len(v), arestas, nao_direcionado, width - 200, height - 200)
             print(dados_json)
             return dados_json, 200, {'Content-Type': 'application/json'}
         except Exception as process_error:

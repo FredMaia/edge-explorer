@@ -6,13 +6,13 @@ Este projeto é um aplicativo para visualização de algoritmos em grafos. O fro
 
 - [Interface](#interface)
 
-| Interação                                         | Executar Algoritmos                                      | Leitura por Arquivo                                      |
-| ------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
-| ![Interação](https://github.com/user-attachments/assets/6db51410-8c33-4546-9a6e-1a85e34ffc34) | ![Executar](https://github.com/user-attachments/assets/6db51410-8c33-4546-9a6e-1a85e34ffc34) | ![Leitura](https://github.com/user-attachments/assets/6db51410-8c33-4546-9a6e-1a85e34ffc34) |
+| Interação                                                                                     | Executar Algoritmos                                                                    | Leitura por Arquivo do exemplo |
+| --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- | -------------------------------- |
+| ![Interação](https://github.com/user-attachments/assets/9c296176-ce44-442a-8cd9-6eebf0b99f78) | ![Executar](https://github.com/user-attachments/assets/4bc50580-dc03-462b-9b7d-09a83d54130f) | ![Leitura](https://github.com/user-attachments/assets/cadf6a4f-1c3d-48c5-83cf-4e285c4bd1b1)
 
-  - [Instalação](#instalação)
-  - [Uso](#uso)
-  - [Arquivo](#arquivo)
+- [Instalação](#instalação)
+- [Uso](#uso)
+- [Arquivo](#arquivo)
 - [Servidor](#servidor)
   - [Instalação](#instalação)
   - [Uso](#uso)
@@ -73,6 +73,7 @@ Your browser does not support the video tag. </video> | <img src="./readmeImages
 
 <video> <source src="https://github.com/user-attachments/assets/98e13f0b-518a-4ccb-93d8-2445041b039c" type="video/mp4">
 Your browser does not support the video tag.
+
 </source>
 </video>
 

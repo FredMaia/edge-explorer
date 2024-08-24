@@ -6,7 +6,10 @@ Este projeto é um aplicativo para visualização de algoritmos em grafos. O fro
 
 - [Interface](#interface)
 
-https://github.com/user-attachments/assets/de6e4b4a-8e87-4e4f-b2c3-84a09fd7cf16
+<video width="600" height="400" controls>
+  <source src="https://github.com/user-attachments/assets/de6e4b4a-8e87-4e4f-b2c3-84a09fd7cf16" type="video/mp4">
+  Seu navegador não suporta o elemento de vídeo.
+</video>
 
 
   - [Instalação](#instalação)

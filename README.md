@@ -8,7 +8,7 @@ Este projeto é um aplicativo para visualização de algoritmos em grafos. O fro
 
 | Interação                                         | Executar Algoritmos                                      | Leitura por Arquivo                                      |
 | ------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------- |
-| ![Interação](https://github.com/user-attachments/assets/6db51410-8c33-4546-9a6e-1a85e34ffc34) | ![Executar](https://github.com/path/to/your.gif) | ![Leitura](https://github.com/path/to/your.gif) |
+| ![Interação](https://github.com/user-attachments/assets/6db51410-8c33-4546-9a6e-1a85e34ffc34) | ![Executar](https://github.com/user-attachments/assets/6db51410-8c33-4546-9a6e-1a85e34ffc34) | ![Leitura](https://github.com/user-attachments/assets/6db51410-8c33-4546-9a6e-1a85e34ffc34) |
 
 ![yes](https://github.com/user-attachments/assets/6db51410-8c33-4546-9a6e-1a85e34ffc34)
 

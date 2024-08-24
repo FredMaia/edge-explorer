@@ -59,7 +59,7 @@ direcionado
 ### imagens
 | Interação                                                                                 | Executar algoritmos                                                | Leitura de por arquivo                                                             |
 | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| <video width="320" height="240" controls> <source src="./assets/interface.mp4" type="video/mp4">
+| <video width="320" height="240" controls> <source src="https://github.com/user-attachments/assets/98e13f0b-518a-4ccb-93d8-2445041b039c" type="video/mp4">
 Your browser does not support the video tag. </video> | <img src="./readmeImages/data.jpg" alt="info image" width="100%"/> | <img src="./readmeImages/info1.jpg" alt="feed image" width="100%"/> |
 
 - **Visualizar Grafos**: Toque na tela para adicionar vértices e criar conexões entre eles. Você pode clicar em um vértice para aumentá-lo e tocar em dois vértices para conectar uma aresta entre eles.

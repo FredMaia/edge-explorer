@@ -1,10 +1,9 @@
 # Graph Algorithm Visualization App
-ds
-Este projeto é um aplicativo para visualização de algoritmos em grafos. O frontend é desenvolvido em React Native e o backend é desenvolvido em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Bellman-Ford, Dijkstra, fluxo máximo, identificador de pontes, trilhas eulerianas, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto por meio de cliques como por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [aqui](#arquivo)
+
+Este projeto é um aplicativo para visualização de algoritmos em grafos. O frontend é desenvolvido em React Native e o backend é desenvolvido em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Bellman-Ford, Dijkstra, fluxo máximo, identificador de pontes, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto interativamente como por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [aqui](#arquivo)
 
 # Índice
 
-- [Introdução](#introdução)
 - [Interface](#interface)
   - [Instalação](#instalação)
   - [Uso](#uso)
@@ -58,6 +57,10 @@ direcionado
 ```
 
 ### imagens
+| Interação                                                                                 | Executar algoritmos                                                | Leitura de por arquivo                                                             |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| <video width="320" height="240" controls> <source src="interface.mp4" type="video/mp4">
+Your browser does not support the video tag. </video> | <img src="./readmeImages/data.jpg" alt="info image" width="100%"/> | <img src="./readmeImages/info1.jpg" alt="feed image" width="100%"/> |
 
 - **Visualizar Grafos**: Toque na tela para adicionar vértices e criar conexões entre eles. Você pode clicar em um vértice para aumentá-lo e tocar em dois vértices para conectar uma aresta entre eles.
 - **Executar Algoritmos**: Selecione um algoritmo do menu e visualize como ele opera no grafo.

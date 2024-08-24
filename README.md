@@ -5,6 +5,10 @@ Este projeto é um aplicativo para visualização de algoritmos em grafos. O fro
 # Índice
 
 - [Interface](#interface)
+
+https://github.com/user-attachments/assets/de6e4b4a-8e87-4e4f-b2c3-84a09fd7cf16
+
+
   - [Instalação](#instalação)
   - [Uso](#uso)
   - [Arquivo](#arquivo)

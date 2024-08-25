@@ -1,4 +1,4 @@
-# Graph Algorithm Visualization App
+# Aplicativo de visualização de algoritmos em grafos
 
 Este projeto é um aplicativo para visualização de algoritmos em grafos. O frontend é desenvolvido em React Native e o backend é desenvolvido em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Bellman-Ford, Dijkstra, fluxo máximo, identificador de pontes, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto interativamente como por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [aqui](#arquivo)
 
@@ -12,7 +12,7 @@ Este projeto é um aplicativo para visualização de algoritmos em grafos. O fro
 - [Servidor](#servidor)
   - [Instalação](#instalação)
   - [Uso](#uso)
-  - [Sobre os algoritmos](#sobre-os-algoritmos)
+  - [Endpoints e Algoritmos](#endpoints-e-algoritmos)
 
 # Interface
 
@@ -63,7 +63,7 @@ direcionado
 #### Instalação
 
 1. **Pré-requisitos**: Certifique-se de ter o Python e o pip instalados em seu sistema.
-2. **Criar um ambiente virtual e instalar dependências**:
+2. **Criar um ambiente virtual e instale dependências**:
 
 ```
 python -m venv venv
@@ -114,5 +114,5 @@ python main.py
 
 #### Contribuidores
 
-[Mateus Milani](http://github.com/milanimateus)
+[Mateus Milani](http://github.com/milanimateus) <br>
 [Mateus Mendes](http://github.com/mateusMendes0/)

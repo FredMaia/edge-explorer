@@ -30,8 +30,8 @@ npx expo start
 #### Uso
 
 | Interação                                                                                     | Executar Algoritmos                                                                      | Leitura por Arquivo                                                                         |
-| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | --- |
-| ![Interação](https://github.com/user-attachments/assets/fba80817-efb5-45e7-99bc-7d23c46298fb) | ![gif2](https://github.com/user-attachments/assets/159b6c6c-ece2-4386-a552-4986b4128251) | ![gif3edt](https://github.com/user-attachments/assets/0a46cbe1-4e3a-4c3b-9e9d-e0861c9e7f0d) | F   |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| ![Interação](https://github.com/user-attachments/assets/fba80817-efb5-45e7-99bc-7d23c46298fb) | ![gif2](https://github.com/user-attachments/assets/159b6c6c-ece2-4386-a552-4986b4128251) | ![gif3](https://github.com/user-attachments/assets/0a46cbe1-4e3a-4c3b-9e9d-e0861c9e7f0d)    |
 
 #### Arquivo
 

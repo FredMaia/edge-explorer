@@ -8,7 +8,6 @@ import {
   Text,
   Modal,
   TextInput,
-  ScrollView,
   GestureResponderEvent,
 } from "react-native";
 import {
@@ -27,11 +26,6 @@ import {
 } from "react-native-gesture-handler";
 
 import * as DocumentPicker from "expo-document-picker";
-import * as FileSystem from "expo-file-system";
-import BottomSheet, {
-  BottomSheetFlatList,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
 
 import axios from "axios";
 
@@ -62,14 +56,6 @@ type Edge = {
 };
 
 export default function App() {
-  const snapPoints = useMemo(() => ["15%", "50%", "90%"], []);
-
-  const bottomSheetRef = useRef<BottomSheet>(null);
-
-  const handleCollapsePress = () => bottomSheetRef.current?.collapse();
-  const snapToIndex = (index: number) =>
-    bottomSheetRef.current?.snapToIndex(index);
-
   const [vertices, setVertices] = useState<Vertex[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
   const [draggedVertexIndex, setDraggedVertexIndex] = useState<number | null>(
@@ -82,7 +68,6 @@ export default function App() {
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
   const [showEdgeModal, setShowEdgeModal] = useState<boolean>(false);
 
-  const [edgeClicked, setEdgeClicked] = useState(false);
   const edgeClickedRef = useRef<boolean>(false);
 
   const [newWeight, setNewWeight] = useState<string>("");
@@ -93,7 +78,6 @@ export default function App() {
     useState<boolean>(false);
   const [vertexToDelete, setVertexToDelete] = useState<Vertex | null>(null);
   const [file, setFile] = useState<FileInfo | null>(null);
-  const [response, setResponse] = useState<string>("");
 
   const showEdges = () => {
     return edges
@@ -109,15 +93,6 @@ export default function App() {
   };
 
   useEffect(() => {
-    const graphData = {
-      0: [0, 1, 1],
-      1: [
-        [0, 0, 1],
-        [1, 2, 1],
-        [2, 3, 1],
-      ],
-    };
-
     console.log(showEdges());
   }, [edges]);
 
@@ -166,16 +141,15 @@ export default function App() {
 
         setIdEdge(idEdge + 1);
       }
-      setSelectedVertex(null); // Deseleciona o vértice após criar a aresta
+      setSelectedVertex(null); 
     } else {
-      setSelectedVertex(vertex); // Seleciona o vértice
+      setSelectedVertex(vertex); 
     }
   };
 
   const handlePress = (event: GestureResponderEvent) => {
     if (edgeClickedRef.current) {
-      edgeClickedRef.current = false; // Reset após detectar clique na aresta
-      console.log("edge po");
+      edgeClickedRef.current = false; 
       return;
     } else {
       console.log("clicou fora");
@@ -192,10 +166,10 @@ export default function App() {
     });
 
     if (clickedVertex) {
-      addEdge(clickedVertex); // Adiciona ou seleciona um vértice
+      addEdge(clickedVertex);
     } else {
-      addVertex(locationX, locationY); // Adiciona um novo vértice
-      setSelectedVertex(null); // Deseleciona qualquer vértice previamente selecionado
+      addVertex(locationX, locationY);
+      setSelectedVertex(null);
     }
   };
 
@@ -244,7 +218,6 @@ export default function App() {
 
   const deleteEdge = () => {
     if (selectedEdge) {
-      console.log(`selected edge: ${JSON.stringify(selectedEdge)}`);
       setEdges(edges.filter((e) => e.idAresta !== selectedEdge.idAresta));
       setShowEdgeModal(false);
       setSelectedEdge(null);
@@ -254,7 +227,6 @@ export default function App() {
   };
 
   const updateEdgeWeight = (newWeight: number) => {
-    console.log(`newWeight: ${newWeight}`);
     if (selectedEdge) {
       setEdges(
         edges.map((edge) =>
@@ -364,7 +336,6 @@ export default function App() {
           }
         );
 
-        setResponse(res.data);
 
         setVertices(res.data.vertices);
         setEdges(res.data.edges);

@@ -1,6 +1,6 @@
 # Aplicativo de visualização de algoritmos em grafos
 
-Este projeto é um aplicativo para visualização de grafos para a matéria de "Algoritmos em Grafos". A interface é desenvolvida em React Native e os algortimos são executados em um servidor em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Dijkstra, fluxo máximo, identificador de pontes, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto interativamente como por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [aqui](#arquivo)
+Este projeto é um aplicativo para visualização de grafos para a matéria de "Algoritmos em Grafos". A interface é desenvolvida em React Native e os algortimos são executados em um servidor em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Dijkstra, fluxo máximo, identificador de pontes, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto interativamente quanto por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [aqui](#arquivo)
 
 # Índice
 
@@ -8,9 +8,9 @@ Este projeto é um aplicativo para visualização de grafos para a matéria de "
 - [Interface](#interface)
   - [Instalação](#instalação)
   - [Uso](#uso)
-  - [Arquivo](#arquivo)
+  - [Arquivo de entrada](#arquivo-de-entrada)
 - [Servidor](#servidor)
-  - [Instalação](#instalação)
+  - [Rode o servidor](#rode-o-servidor)
   - [Uso](#uso)
   - [Endpoints e Algoritmos](#endpoints-e-algoritmos)
 
@@ -33,7 +33,7 @@ npx expo start
 | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
 | ![Interação](https://github.com/user-attachments/assets/fba80817-efb5-45e7-99bc-7d23c46298fb) | ![gif2](https://github.com/user-attachments/assets/159b6c6c-ece2-4386-a552-4986b4128251) | ![gif3](https://github.com/user-attachments/assets/0a46cbe1-4e3a-4c3b-9e9d-e0861c9e7f0d)    |
 
-#### Arquivo
+#### Arquivo de entrada
 
 O arquivo txt de entrada deve estar estruturado da seguinte maneira:
 
@@ -58,14 +58,14 @@ Existem alguns grafos de testes na pasta `server/tests`.
 
 - **Visualizar Grafos**: Toque na tela para adicionar vértices e criar conexões entre eles. Você pode clicar em um vértice para aumentá-lo e tocar em dois vértices para conectar uma aresta entre eles.
 - **Executar Algoritmos**: Selecione um algoritmo do menu e visualize como ele opera no grafo.
-- **Resetar o Grafo**: Use o botão de reset para remover todas as arestas e reiniciar o grafo.
+- **Resetar o Grafo**: Use o botão de reset para remover todas as arestas e reiniciar o grafo, como também pode excluir vértices/arestas específicas ou alterar o peso.
 
 # Servidor
 
-#### Instalação
+#### Rode o servidor
 
 1. **Pré-requisitos**: Certifique-se de ter o Python e o pip instalados em seu sistema.
-2. **Criar um ambiente virtual e instale dependências**:
+2. **Crie um ambiente virtual e instale dependências**:
 
 ```
 python -m venv venv

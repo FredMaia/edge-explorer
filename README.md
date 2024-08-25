@@ -4,28 +4,15 @@ Este projeto é um aplicativo para visualização de algoritmos em grafos. O fro
 
 # Índice
 
+
 - [Interface](#interface)
-
-| Interação                                                                                     | Executar Algoritmos                                                                          | Leitura por Arquivo                                                                         |
-| --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| ![Interação](https://github.com/user-attachments/assets/fba80817-efb5-45e7-99bc-7d23c46298fb) | ![gif2](https://github.com/user-attachments/assets/159b6c6c-ece2-4386-a552-4986b4128251)     |![gif3edt](https://github.com/user-attachments/assets/0a46cbe1-4e3a-4c3b-9e9d-e0861c9e7f0d)  |
-
-- [Instalação](#instalação)
-- [Uso](#uso)
-- [Arquivo](#arquivo)
+  - [Instalação](#instalação)
+  - [Uso](#uso)
+  - [Arquivo](#arquivo)
 - [Servidor](#servidor)
   - [Instalação](#instalação)
   - [Uso](#uso)
-- [Desenvolvimento](#desenvolvimento)
-  - [Frontend](#desenvolvimento-frontend)
-  - [Backend](#desenvolvimento-backend)
-
-# Introdução
-
-Este projeto consiste em duas partes:
-
-- **Frontend**: Aplicativo móvel desenvolvido em React Native, que permite a visualização e interação com grafos e algoritmos.
-- **Backend**: API desenvolvida em Flask, que fornece os dados e processa as solicitações relacionadas aos algoritmos de grafos.
+  - [Sobre os algoritmos](#sobre-os-algoritmos)
 
 # Interface
 
@@ -41,6 +28,10 @@ npx expo start
 ```
 
 #### Uso
+
+| Interação                                                                                     | Executar Algoritmos                                                                      | Leitura por Arquivo                                                                         |
+| --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- | --- |
+| ![Interação](https://github.com/user-attachments/assets/fba80817-efb5-45e7-99bc-7d23c46298fb) | ![gif2](https://github.com/user-attachments/assets/159b6c6c-ece2-4386-a552-4986b4128251) | ![gif3edt](https://github.com/user-attachments/assets/0a46cbe1-4e3a-4c3b-9e9d-e0861c9e7f0d) | F   |
 
 #### Arquivo
 
@@ -62,22 +53,6 @@ direcionado
 5 3 1 2
 6 3 4 4
 ```
-
-### imagens
-
-| Interação | Executar algoritmos | Leitura de por arquivo |
-| --------- | ------------------- | ---------------------- |
-
-| <video width="320" height="240" controls> <source src="./assets/interface.mp4" type="video/mp4">
-Your browser does not support the video tag. </video> | <img src="./readmeImages/data.jpg" alt="info image" width="100%"/> | <img src="./readmeImages/info1.jpg" alt="feed image" width="100%"/> |
-
-<video> <source src="https://github.com/user-attachments/assets/98e13f0b-518a-4ccb-93d8-2445041b039c" type="video/mp4">
-Your browser does not support the video tag.
-
-</source>
-</video>
-
-![test](https://github.com/user-attachments/assets/98e13f0b-518a-4ccb-93d8-2445041b039c)
 
 - **Visualizar Grafos**: Toque na tela para adicionar vértices e criar conexões entre eles. Você pode clicar em um vértice para aumentá-lo e tocar em dois vértices para conectar uma aresta entre eles.
 - **Executar Algoritmos**: Selecione um algoritmo do menu e visualize como ele opera no grafo.
@@ -102,54 +77,42 @@ pip install -r requirements.txt
 python main.py
 ```
 
-#### Uso
+### Endpoints e Algoritmos
 
-- **Endpoints**:
-  - **POST `/bfs`**: Realiza a busca em largura (BFS) no grafo fornecido.
-    - **Request Body**:
-      ```json
-      {
-        "graph": {
-          "A": ["B", "C"],
-          "B": ["A", "D", "E"],
-          "C": ["A", "F"],
-          "D": ["B"],
-          "E": ["B", "F"],
-          "F": ["C", "E"]
-        },
-        "start": "A"
-      }
-      ```
-    - **Response**:
-      ```json
-      ["A", "B", "C", "D", "E", "F"]
-      ```
-  - **POST `/dfs`**: Realiza a busca em profundidade (DFS) no grafo fornecido.
-    - **Request Body**:
-      ```json
-      {
-        "graph": {
-          "A": ["B", "C"],
-          "B": ["A", "D", "E"],
-          "C": ["A", "F"],
-          "D": ["B"],
-          "E": ["B", "F"],
-          "F": ["C", "E"]
-        },
-        "start": "A"
-      }
-      ```
-    - **Response**:
-      ```json
-      ["A", "B", "D", "E", "F", "C"]
-      ```
+- **POST `/bfs`**: Imprime a árvore de largura (priorizando a ordem lexicográfica dos vértices; 0 é a origem). Você deve imprimir o identificador das arestas. Caso o grafo seja desconexo, considere apenas a árvore com a raiz 0.
 
-tobedones
--aresta de um vertice para ele mesmo
--verificar se a aresta ja existe ao adiciona-la
--bottom tab com opções
--zoom in e zoom out
--ao adicionar um vertice, ele nao é adicionado nos edges
--ver preview do arquivo selecionado
+- **POST `/dfs`**: Imprime a árvore em profundidade (priorizando a ordem lexicográfica dos vértices; 0 é a origem). Você deve imprimir o identificador das arestas. Caso o grafo seja desconexo, considere apenas a árvore com a raiz 0.
 
--estruturar pastas do server: main.py que chama cada função da rota na sua respectiva pasta (listar, gerar, verificar)
+- **POST `/conexo`**: Verifica se um grafo é conexo. Para o caso de grafos orientados, verifica conectividade fraca.
+
+- **POST `/euleriano`**: Verifica se um grafo é Euleriano.
+
+- **POST `/bipartido`**: Verifica se um grafo não-orientado é bipartido.
+
+- **POST `/ciclo`**: Verifica se um grafo possui ciclo.
+
+- **POST `/componentes-conexos`**: Calcula a quantidade de componentes conexas em um grafo não-orientado.
+
+- **POST `/componentes-fortes`**: Calcula a quantidade de componentes fortemente conexas em um grafo orientado.
+
+- **POST `/pontos_articulacao`**: Imprime os vértices de articulação de um grafo não-orientado (priorizar a ordem lexicográfica dos vértices).
+
+- **POST `/arestas_ponte`**: Calcula quantas arestas ponte possui um grafo não-orientado.
+
+- **POST `/arvore_geradora_minima`**: Calcula o valor final de uma árvore geradora mínima (para grafos não-orientados).
+
+- **POST `/ordenacao_topologica`**: Imprime a ordem dos vértices em uma ordenação topológica. Esta função não fica disponível em grafos não-direcionados. Deve-se priorizar a ordem lexicográfica dos vértices para a escolha de quais explorar.
+
+- **POST `/caminho_minimo`**: Calcula o valor do caminho mínimo entre dois vértices (para grafos não-orientados com pelo menos um peso diferente nas arestas). O vértice 0 é a origem; n-1 é o destino.
+
+- **POST `/fluxo_maximo`**: Calcula o valor do fluxo máximo para grafos direcionados. O vértice 0 é a origem; n-1 é o destino.
+
+- **POST `/fecho_transitivo`**: Calcula o fecho transitivo para grafos direcionados. Deve-se priorizar a ordem lexicográfica dos vértices; o vértice 0 é o escolhido.
+
+- **POST `/upload`**: Endpoint genérico para upload.
+
+
+#### Contribuidores
+
+[Mateus Milani](http://github.com/milanimateus)
+[Mateus Mendes](http://github.com/mateusMendes0/)

@@ -1,6 +1,6 @@
 # Aplicativo de visualização de algoritmos em grafos
 
-Este projeto é um aplicativo para visualização de grafos para a matéria de "Algoritmos em Grafos". A interface é desenvolvida em React Native e os algortimos são executados em um servidor em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Dijkstra, fluxo máximo, identificador de pontes, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto interativamente quanto por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [aqui](#arquivo)
+Este projeto é um aplicativo para visualização de grafos para a matéria de "Algoritmos em Grafos". A interface é desenvolvida em React Native e os algortimos são executados em um servidor em Flask. O objetivo é fornecer uma interface interativa para visualizar e experimentar diferentes algoritmos de grafos, como o BFS, DFS, Kruskal, Prim, Dijkstra, fluxo máximo, identificador de pontes, vértices de articulação, dentre outros. Os grafos podem ser gerados tanto interativamente quanto por leitura de arquivo. A leitura do arquivo deve estar na forma descrita [aqui](#arquivo-de-entrada)
 
 # Índice
 
@@ -18,7 +18,7 @@ Este projeto é um aplicativo para visualização de grafos para a matéria de "
 
 #### Instalação
 
-1. **Pré-requisitos**: Certifique-se de ter o Node.js e o Expo instalados em seu sistema.
+1. **Pré-requisitos**: Certifique-se de ter o Node.js instalados em seu sistema.
 
 2. **Instale as dependências e rode**:
 

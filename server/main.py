@@ -409,7 +409,6 @@ def arvore_minima(vertices, arestas, nao_direcionado):
 
     return arestas_selecionadas
 
-# OK
 @app.route('/bfs', methods=['POST'])
 def bfs_route():
     data = request.get_json()
@@ -431,7 +430,6 @@ def bfs_route():
     
     return jsonify({'bfs_order': bfs_result})
 
-# OK
 @app.route('/dfs', methods=['POST'])
 def dfs_route():
     data = request.get_json()
@@ -453,7 +451,6 @@ def dfs_route():
     
     return jsonify({'bfs_order': bfs_result})
 
-#OK
 @app.route('/conexo', methods=['POST'])
 def is_connected():
     data = request.get_json()
@@ -474,7 +471,6 @@ def is_connected():
 
     return jsonify({'resultado': resultado})
 
-#
 @app.route("/euleriano", methods=['POST'])
 def is_euleriano():
     data = request.get_json()
@@ -499,7 +495,6 @@ def is_euleriano():
 
     return jsonify({'resultado': 1}) 
 
-#OK
 @app.route('/bipartido', methods=['POST'])
 def verificar_bipartido():
     data = request.get_json()
@@ -521,7 +516,6 @@ def verificar_bipartido():
 
     return jsonify({'resultado': resultado})
 
-#OK
 @app.route('/ciclo', methods=['POST'])
 def verificar_ciclo():
     data = request.get_json()
@@ -543,7 +537,6 @@ def verificar_ciclo():
 
     return jsonify({'resultado': resultado})
 
-#ok
 @app.route('/componentes_conexos', methods=['POST'])
 def calcular_componentes_conexos():
     data = request.get_json()
@@ -568,7 +561,6 @@ def calcular_componentes_conexos():
     print(resultado)
     return jsonify({'resultado': resultado})
 
-#ok
 @app.route('/componentes_fortes', methods=['POST'])
 def calcular_componentes_fortes():
     data = request.get_json()
@@ -593,7 +585,6 @@ def calcular_componentes_fortes():
     print(resultado)
     return jsonify({'resultado': resultado})
 
-# ok
 @app.route('/pontos_articulacao', methods=['POST'])
 def imprimir_pontos_articulacao():
     data = request.get_json()
@@ -614,7 +605,6 @@ def imprimir_pontos_articulacao():
     print(resultado)
     return jsonify({'resultado': resultado})
 
-#OK
 @app.route('/arestas_ponte', methods=['POST'])
 def calcular_arestas_ponte():
     data = request.get_json()
@@ -636,7 +626,6 @@ def calcular_arestas_ponte():
 
     return jsonify({'resultado': resultado})
 
-#
 @app.route('/arvore_geradora_minima', methods=['POST'])
 def calcular_arvore_geradora_minima():
     data = request.get_json()
@@ -657,46 +646,6 @@ def calcular_arvore_geradora_minima():
     
     return jsonify({'resultado': resultado})
 
-@app.route('/ordenacao_topologica', methods=['POST'])
-def imprimir_ordenacao_topologica():
-    data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement topological sort here
-    result = "topological_sort(graph)"
-    return jsonify({'ordenacao_topologica': result})
-
-@app.route('/caminho_minimo', methods=['POST'])
-def calcular_caminho_minimo():
-    data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement shortest path calculation here
-    result = "shortest_path(graph)"
-    return jsonify({'caminho_minimo': result})
-
-@app.route('/fluxo_maximo', methods=['POST'])
-def calcular_fluxo_maximo():
-    data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement max flow calculation here
-    result = "max_flow(graph)"
-    return jsonify({'fluxo_maximo': result})
-
-@app.route('/fecho_transitivo', methods=['POST'])
-def calcular_fecho_transitivo():
-    data = request.get_json()
-    graph, error = convert_graph(data)
-    if error:
-        return jsonify({'error': error}), 400
-    # Implement transitive closure here
-    result = "transitive_closure(graph)"
-    return jsonify({'fecho_transitivo': result})
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -708,7 +657,6 @@ def upload_file():
         return jsonify({'error': 'No selected file'}), 400
     
     if file:
-        # Save the file using the UPLOAD_FOLDER variable
         file_path = os.path.join(UPLOAD_FOLDER, file.filename)
         try:
             
